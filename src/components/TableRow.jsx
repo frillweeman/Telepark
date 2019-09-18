@@ -54,7 +54,7 @@ class TableRow extends Component {
           </Grid>
         </Hidden>
         <Grid item xs={2} style={!this.props.head ? { color: "#0088ff" } : {}}>
-          {this.props.reservation.spaceid}
+          {this.props.reservation.playerid}
         </Grid>
         <Grid
           item
@@ -80,7 +80,12 @@ class TableRow extends Component {
               : {}
           }
         >
-          {this.props.reservation.from}
+          {this.props.reservation.from.length < 5
+            ? this.props.reservation.from
+            : new Date(this.props.reservation.from).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })}
         </Grid>
         <Grid
           item
@@ -91,7 +96,12 @@ class TableRow extends Component {
               : {}
           }
         >
-          {this.props.reservation.to}
+          {this.props.reservation.to.length < 5
+            ? this.props.reservation.to
+            : new Date(this.props.reservation.to).toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })}
         </Grid>
       </ListItem>
     );

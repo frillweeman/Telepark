@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import TableRow from "./TableRow";
 import DeleteDialog from "./DeleteDialog";
-import DeleteSnackBar from "./DeleteSnackBar";
 import { Grid, List, Paper, Typography } from "@material-ui/core";
 
 class Table extends Component {
@@ -13,43 +12,61 @@ class Table extends Component {
     selectedForEdit: null,
     selected: [],
     reservations: [
-      {
-        _id: "54759eb3c090d83494e2d806",
-        spaceid: "2L",
-        name: "Dick Reeves",
-        from: "now",
-        to: "3:30 pm"
-      },
-      {
-        _id: "54759eb3c090d83494e2d807",
-        spaceid: "7L",
-        name: "Peter Reeves",
-        from: "now",
-        to: "5:30 pm"
-      },
-      {
-        _id: "54759eb3c090d83494e2d808",
-        spaceid: "1R",
-        name: "John Freeman",
-        from: "now",
-        to: "12:30 pm"
-      },
-      {
-        _id: "54759eb3c090d83494e2d804",
-        spaceid: "3L",
-        name: "Will Freeman",
-        from: "8:00 am",
-        to: "5:00 pm"
-      },
-      {
-        _id: "54759eb3c090d83494e2d805",
-        spaceid: "5R",
-        name: "Danner Cronise",
-        from: "10:00 am",
-        to: "3:00 pm"
-      }
+      // {
+      //   _id: "54759eb3c090d83494e2d806",
+      //   playerid: "2L",
+      //   name: "Dick Reeves",
+      //   from: "now",
+      //   to: "3:30 pm"
+      // },
+      // {
+      //   _id: "54759eb3c090d83494e2d807",
+      //   playerid: "7L",
+      //   name: "Peter Reeves",
+      //   from: "now",
+      //   to: "5:30 pm"
+      // },
+      // {
+      //   _id: "54759eb3c090d83494e2d808",
+      //   playerid: "1R",
+      //   name: "John Freeman",
+      //   from: "now",
+      //   to: "12:30 pm"
+      // },
+      // {
+      //   _id: "54759eb3c090d83494e2d804",
+      //   playerid: "3L",
+      //   name: "Will Freeman",
+      //   from: "8:00 am",
+      //   to: "5:00 pm"
+      // },
+      // {
+      //   _id: "54759eb3c090d83494e2d805",
+      //   playerid: "5R",
+      //   name: "Danner Cronise",
+      //   from: "10:00 am",
+      //   to: "3:00 pm"
+      // }
     ]
   };
+
+  componentDidMount() {
+    fetch("/api/reservations")
+      .then(res => res.json())
+      .then(
+        reservations => {
+          this.setState({
+            reservations: reservations
+          });
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        error => {
+          console.log("there has been an error", error);
+        }
+      );
+  }
 
   handleDeleteMany = ids => e => {
     this.setState({
@@ -61,6 +78,21 @@ class Table extends Component {
   };
 
   handleDelete = ids => e => {
+    // send delete request to backend
+    fetch("/api/reservations", {
+      method: "DELETE",
+      body: JSON.stringify({
+        toDelete: ids
+      }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(res => res.json())
+      .then(res => console.log(res));
+
+    console.log("ids", ids);
+
     this.setState({
       reservations: this.state.reservations.filter(
         reservation => !ids.includes(reservation._id)
@@ -126,12 +158,24 @@ class Table extends Component {
               }
               someSelected={this.state.selected.length}
               reservation={{
-                spaceid: "Space",
+                playerid: "Space",
                 name: "Reserved For",
                 from: "From",
                 to: "To"
               }}
             />
+            {!this.state.reservations.length && (
+              <div
+                style={{
+                  textAlign: "center",
+                  margin: "auto",
+                  padding: "1em 0 0.3em 0",
+                  color: "#343434"
+                }}
+              >
+                No Reservations
+              </div>
+            )}
             {this.state.reservations.map((reservation, i) => (
               <TableRow
                 key={i}
@@ -149,7 +193,6 @@ class Table extends Component {
           deleteConfirmation={this.state.deleteConfirmation}
           onClose={this.handleClose}
         />
-        <DeleteSnackBar />
       </Paper>
     );
   }
