@@ -1,7 +1,8 @@
 import React, { Component } from "react";
 import TableRow from "./TableRow";
 import DeleteDialog from "./DeleteDialog";
-import { Grid, List, Paper, Typography } from "@material-ui/core";
+import EditDialog from "./EditDialog";
+import { Grid, List, Paper, Typography, Button } from "@material-ui/core";
 
 class Table extends Component {
   state = {
@@ -139,7 +140,7 @@ class Table extends Component {
 
   render() {
     return (
-      <Paper style={{ padding: "1em 0 0 0", margin: "1em" }}>
+      <Paper style={{ padding: "1em 0", margin: "1em", textAlign: "center" }}>
         <Typography variant="h5" style={{ textAlign: "center" }}>
           Reservations
         </Typography>
@@ -173,7 +174,7 @@ class Table extends Component {
                   color: "#343434"
                 }}
               >
-                No Reservations
+                - No Reservations -
               </div>
             )}
             {this.state.reservations.map((reservation, i) => (
@@ -189,10 +190,22 @@ class Table extends Component {
             ))}
           </Grid>
         </List>
+        <Button variant="outlined" color="primary">
+          <i
+            className="material-icons"
+            style={{
+              marginRight: "0.5em"
+            }}
+          >
+            add
+          </i>
+          Create Reservation
+        </Button>
         <DeleteDialog
           deleteConfirmation={this.state.deleteConfirmation}
           onClose={this.handleClose}
         />
+        <EditDialog new={true} />
       </Paper>
     );
   }
