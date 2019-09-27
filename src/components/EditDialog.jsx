@@ -4,13 +4,10 @@ import {
   DialogContent,
   FormControl,
   FormHelperText,
-  MenuItem,
   DialogTitle,
   DialogActions,
   Button,
   TextField,
-  InputLabel,
-  Select,
   FormLabel,
   RadioGroup,
   Radio,
@@ -35,26 +32,64 @@ const classes = {
 };
 
 class EditDialog extends Component {
-  state = {
-    days: "0"
-  };
+  state = {};
 
   handleDayChange = e => {
-    this.setState({ days: e.target.value });
+    if (e.target.value === "1")
+      this.props.onChange({
+        to: new Date().setDate(new Date().getDate() + 1)
+      });
+    else
+      this.props.onChange({
+        to: new Date()
+      });
+  };
+
+  handleTextFieldChange = sender => e => {
+    this.props.onChange({
+      [sender]: e.target.value
+    });
+  };
+
+  handleDateFieldChange = date => {
+    if (!isNaN(date.getTime())) {
+      this.props.onChange({
+        to: date.toUTCString()
+      });
+
+      console.log("new to", this.props.reservation.to);
+    }
+  };
+
+  handleSave = e => {
+    // convert times to date strings
+
+    this.props.onSave();
   };
 
   render() {
     return (
-      <Dialog open={true} fullWidth={true} maxWidth="sm">
+      <Dialog
+        open={this.props.open}
+        onClose={this.props.onClose}
+        fullWidth={true}
+        maxWidth="sm"
+      >
         <DialogTitle>
-          {this.props.new ? "Create" : "Edit"} Reservation
+          {this.props.reservation.name.length ? "Edit" : "Create"} Reservation
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
             <FormControl
               style={{ ...classes.formControl, ...classes.fullWidth }}
             >
-              <TextField id="name" label="Name" fullWidth />
+              <TextField
+                id="name"
+                label="Name"
+                value={this.props.reservation.name}
+                onChange={this.handleTextFieldChange("name")}
+                fullWidth
+              />
             </FormControl>
             <FormControl
               style={{ ...classes.formControl, ...classes.partialWidth }}
@@ -63,7 +98,9 @@ class EditDialog extends Component {
                 id="start-time"
                 label="Start Time"
                 type="time"
-                defaultValue={new Date().toLocaleTimeString([], {
+                defaultValue={new Date(
+                  this.props.reservation.from
+                ).toLocaleTimeString([], {
                   hour12: false,
                   hour: "numeric",
                   minute: "2-digit"
@@ -78,7 +115,13 @@ class EditDialog extends Component {
                 id="end-time"
                 label="End Time"
                 type="time"
-                defaultValue="17:30"
+                defaultValue={new Date(
+                  this.props.reservation.to
+                ).toLocaleTimeString([], {
+                  hour12: false,
+                  hour: "numeric",
+                  minute: "2-digit"
+                })}
                 inputProps={{
                   step: 300
                 }}
@@ -91,7 +134,12 @@ class EditDialog extends Component {
               <RadioGroup
                 aria-label="days"
                 name="days"
-                value={this.state.days}
+                value={
+                  new Date(this.props.reservation.to).getUTCDate() ===
+                  new Date().getUTCDate()
+                    ? "0"
+                    : "1"
+                }
                 onChange={this.handleDayChange}
                 row
               >
@@ -106,7 +154,8 @@ class EditDialog extends Component {
                   label="Until Date"
                 ></FormControlLabel>
               </RadioGroup>
-              {this.state.days === "1" && (
+              {new Date(this.props.reservation.to).getUTCDate() !==
+                new Date().getUTCDate() && (
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <KeyboardDatePicker
                     disableToolbar
@@ -114,8 +163,8 @@ class EditDialog extends Component {
                     format="MM/dd/yyyy"
                     id="date-picker-inline"
                     label="End Date"
-                    value={new Date().setDate(new Date().getDate() + 1)}
-                    onChange={this.handleDayChange}
+                    value={new Date(this.props.reservation.to)}
+                    onChange={this.handleDateFieldChange}
                     KeyboardButtonProps={{
                       "aria-label": "change date"
                     }}
@@ -124,32 +173,29 @@ class EditDialog extends Component {
               )}
             </FormControl>
             <FormControl
-              style={{ ...classes.formControl, ...classes.fullWidth }}
+              style={{ ...classes.formControl, ...classes.partialWidth }}
               disabled
             >
-              <InputLabel htmlFor="name-disabled">Parking Space</InputLabel>
-              <Select
-                value={"8R"}
-                inputProps={{
-                  name: "name",
-                  id: "name-disabled"
-                }}
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value="8R">8R</MenuItem>
-              </Select>
+              <TextField
+                id="qty"
+                label="Number of Spaces"
+                type="number"
+                value="1"
+              />
               <FormHelperText>
-                Only space 8R is available during testing.
+                Note: Only space 8R is available during testing.
+                <br />
+                <br />
+                Spaces automatically chosen prioritizing spaces near the front
+                of the building and keeping group reservations together.
               </FormHelperText>
             </FormControl>
           </form>
         </DialogContent>
         <DialogActions>
-          <Button>Cancel</Button>
-          <Button color="primary" variant="outlined">
-            {this.props.new ? "Create" : "Update"}
+          <Button onClick={this.props.onClose}>Cancel</Button>
+          <Button color="primary" variant="outlined" onClick={this.handleSave}>
+            {this.props.reservation.name.length ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

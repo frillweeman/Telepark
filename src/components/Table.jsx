@@ -10,45 +10,10 @@ class Table extends Component {
       open: false,
       ids: []
     },
+    selectedForDelete: null,
     selectedForEdit: null,
     selected: [],
-    reservations: [
-      // {
-      //   _id: "54759eb3c090d83494e2d806",
-      //   playerid: "2L",
-      //   name: "Dick Reeves",
-      //   from: "now",
-      //   to: "3:30 pm"
-      // },
-      // {
-      //   _id: "54759eb3c090d83494e2d807",
-      //   playerid: "7L",
-      //   name: "Peter Reeves",
-      //   from: "now",
-      //   to: "5:30 pm"
-      // },
-      // {
-      //   _id: "54759eb3c090d83494e2d808",
-      //   playerid: "1R",
-      //   name: "John Freeman",
-      //   from: "now",
-      //   to: "12:30 pm"
-      // },
-      // {
-      //   _id: "54759eb3c090d83494e2d804",
-      //   playerid: "3L",
-      //   name: "Will Freeman",
-      //   from: "8:00 am",
-      //   to: "5:00 pm"
-      // },
-      // {
-      //   _id: "54759eb3c090d83494e2d805",
-      //   playerid: "5R",
-      //   name: "Danner Cronise",
-      //   from: "10:00 am",
-      //   to: "3:00 pm"
-      // }
-    ]
+    reservations: []
   };
 
   componentDidMount() {
@@ -133,9 +98,50 @@ class Table extends Component {
     if (willDelete) this.handleDelete(this.state.deleteConfirmation.ids)();
   };
 
-  handleEditRequest = reservation => e => {
-    if (e.target.tagName !== "DIV") return;
-    this.setState({ selectedForEdit: reservation });
+  handleDeleteRequest = reservation => e => {
+    const edit = e.target.tagName === "DIV";
+
+    if (edit) {
+      console.log("we gonna edit this bitch");
+      this.setState({ selectedForEdit: reservation });
+    } else {
+      // selected for delete
+      this.setState({ selectedForDelete: reservation });
+    }
+  };
+
+  handleNewReservation = e => {
+    let now = new Date();
+    let later = new Date(now);
+    later.setHours(17, 30, 0, 0);
+    this.setState({
+      selectedForEdit: {
+        _id: null,
+        name: "",
+        playerid: "8r",
+        from: now.toUTCString(),
+        to: later.toUTCString()
+      }
+    });
+  };
+
+  handleReservationFormChange = change => {
+    this.setState({
+      selectedForEdit: {
+        ...this.state.selectedForEdit,
+        ...change
+      }
+    });
+  };
+
+  handleSaveReservation = e => {
+    console.log("new reservation", this.state.selectedForEdit);
+  };
+
+  handleCancelEdit = e => {
+    this.setState({
+      selectedForEdit: null
+    });
   };
 
   render() {
@@ -182,7 +188,7 @@ class Table extends Component {
                 key={i}
                 selected={this.state.selected.includes(reservation._id)}
                 onDelete={this.handleDelete([reservation._id])}
-                onClick={this.handleEditRequest(reservation)}
+                onDeleteClick={this.handleDeleteRequest(reservation)}
                 reservation={reservation}
                 isLast={i === this.state.reservations.length - 1}
                 onCheckboxChange={this.handleCheckboxChange(reservation._id)}
@@ -190,7 +196,11 @@ class Table extends Component {
             ))}
           </Grid>
         </List>
-        <Button variant="outlined" color="primary">
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={this.handleNewReservation}
+        >
           <i
             className="material-icons"
             style={{
@@ -205,7 +215,15 @@ class Table extends Component {
           deleteConfirmation={this.state.deleteConfirmation}
           onClose={this.handleClose}
         />
-        <EditDialog new={true} />
+        {this.state.selectedForEdit && (
+          <EditDialog
+            open
+            onClose={this.handleCancelEdit}
+            onChange={this.handleReservationFormChange}
+            onSave={this.handleSaveReservation}
+            reservation={this.state.selectedForEdit}
+          />
+        )}
       </Paper>
     );
   }

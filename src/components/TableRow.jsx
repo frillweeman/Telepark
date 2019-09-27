@@ -29,7 +29,7 @@ class TableRow extends Component {
     return (
       <ListItem
         button={!this.props.head}
-        onClick={this.props.onClick}
+        onClick={this.props.onDeleteClick}
         divider={!this.props.isLast}
         style={this.props.head ? style.head : style.body}
       >
