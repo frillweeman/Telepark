@@ -32,22 +32,49 @@ const classes = {
 };
 
 class EditDialog extends Component {
-  state = {};
+  state = {
+    from: new Date(this.props.reservation.from).toLocaleTimeString([], {
+      hour12: false,
+      hour: "numeric",
+      minute: "2-digit"
+    }),
+    to: new Date(this.props.reservation.to).toLocaleTimeString([], {
+      hour12: false,
+      hour: "numeric",
+      minute: "2-digit"
+    })
+  };
 
   handleDayChange = e => {
-    if (e.target.value === "1")
-      this.props.onChange({
-        to: new Date().setDate(new Date().getDate() + 1)
-      });
-    else
-      this.props.onChange({
-        to: new Date()
-      });
+    // if (e.target.value === "1")
+    //   this.props.onChange({
+    //     to: new Date().setDate(new Date().getDate() + 1)
+    //   });
+    // else
+    //   this.props.onChange({
+    //     to: new Date()
+    //   });
   };
 
   handleTextFieldChange = sender => e => {
     this.props.onChange({
       [sender]: e.target.value
+    });
+  };
+
+  handleTimeChange = sender => e => {
+    this.setState({
+      [sender]: e.target.value
+    });
+
+    const timeSection = e.target.value.split(":");
+
+    let date = new Date();
+    date.setHours(timeSection[0], timeSection[1], 0);
+    let dateString = date.toUTCString();
+
+    this.props.onChange({
+      [sender]: dateString
     });
   };
 
@@ -61,12 +88,6 @@ class EditDialog extends Component {
     }
   };
 
-  handleSave = e => {
-    // convert times to date strings
-
-    this.props.onSave();
-  };
-
   render() {
     return (
       <Dialog
@@ -76,7 +97,7 @@ class EditDialog extends Component {
         maxWidth="sm"
       >
         <DialogTitle>
-          {this.props.reservation.name.length ? "Edit" : "Create"} Reservation
+          {this.props.reservation._id ? "Edit" : "Create"} Reservation
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
@@ -98,13 +119,8 @@ class EditDialog extends Component {
                 id="start-time"
                 label="Start Time"
                 type="time"
-                defaultValue={new Date(
-                  this.props.reservation.from
-                ).toLocaleTimeString([], {
-                  hour12: false,
-                  hour: "numeric",
-                  minute: "2-digit"
-                })}
+                value={this.state.from}
+                onChange={this.handleTimeChange("from")}
                 inputProps={{
                   step: 300
                 }}
@@ -115,13 +131,8 @@ class EditDialog extends Component {
                 id="end-time"
                 label="End Time"
                 type="time"
-                defaultValue={new Date(
-                  this.props.reservation.to
-                ).toLocaleTimeString([], {
-                  hour12: false,
-                  hour: "numeric",
-                  minute: "2-digit"
-                })}
+                value={this.state.to}
+                onChange={this.handleTimeChange("to")}
                 inputProps={{
                   step: 300
                 }}
@@ -129,6 +140,7 @@ class EditDialog extends Component {
             </FormControl>
             <FormControl
               style={{ ...classes.formControl, ...classes.fullWidth }}
+              disabled
             >
               <FormLabel component="legend">Days</FormLabel>
               <RadioGroup
@@ -194,8 +206,12 @@ class EditDialog extends Component {
         </DialogContent>
         <DialogActions>
           <Button onClick={this.props.onClose}>Cancel</Button>
-          <Button color="primary" variant="outlined" onClick={this.handleSave}>
-            {this.props.reservation.name.length ? "Update" : "Create"}
+          <Button
+            color="primary"
+            variant="outlined"
+            onClick={this.props.onSave}
+          >
+            {this.props.reservation._id ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

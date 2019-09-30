@@ -135,7 +135,42 @@ class Table extends Component {
   };
 
   handleSaveReservation = e => {
-    console.log("new reservation", this.state.selectedForEdit);
+    let obj = this.state.selectedForEdit;
+    this.setState({ selectedForEdit: null });
+
+    if (this.state.selectedForEdit._id == null) {
+      // post request
+
+      delete obj._id;
+
+      fetch("/api/reservations", {
+        method: "POST",
+        body: JSON.stringify(obj),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(res => res.json())
+        .then(res => {
+          this.componentDidMount();
+          console.log(res);
+        });
+    } else {
+      // put request
+
+      fetch("/api/reservations", {
+        method: "PUT",
+        body: JSON.stringify(obj),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(res => res.json())
+        .then(res => {
+          this.componentDidMount();
+          console.log(res);
+        });
+    }
   };
 
   handleCancelEdit = e => {
