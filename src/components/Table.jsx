@@ -12,27 +12,8 @@ class Table extends Component {
     },
     selectedForDelete: null,
     selectedForEdit: null,
-    selected: [],
-    reservations: []
+    selected: []
   };
-
-  componentDidMount() {
-    fetch("/api/reservations")
-      .then(res => res.json())
-      .then(
-        reservations => {
-          this.setState({
-            reservations: reservations
-          });
-        },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
-        error => {
-          console.log("there has been an error", error);
-        }
-      );
-  }
 
   handleDeleteMany = ids => e => {
     this.setState({
@@ -43,28 +24,17 @@ class Table extends Component {
     });
   };
 
-  handleDelete = ids => e => {
+  handleDelete = id => {
     // send delete request to backend
-    fetch("/api/reservations", {
-      method: "DELETE",
-      body: JSON.stringify({
-        toDelete: ids
-      }),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => res.json())
-      .then(res => console.log(res));
 
-    console.log("ids", ids);
+    console.log("id: ", id);
 
-    this.setState({
-      reservations: this.state.reservations.filter(
-        reservation => !ids.includes(reservation._id)
-      ),
-      selected: this.state.selected.filter(id => !ids.includes(id))
-    });
+    // this.setState({
+    //   reservations: this.state.reservations.filter(
+    //     reservation => !ids.includes(reservation._id)
+    //   ),
+    //   selected: this.state.selected.filter(id => !ids.includes(id))
+    // });
   };
 
   handleSelectAll = onlySomeSelected => (e, checked) => {
@@ -98,47 +68,21 @@ class Table extends Component {
     if (willDelete) this.handleDelete(this.state.deleteConfirmation.ids)();
   };
 
-  handleDeleteRequest = reservation => e => {
-    const edit = e.target.tagName === "DIV";
-
-    if (edit) {
-      console.log("we gonna edit this bitch");
-      this.setState({ selectedForEdit: reservation });
-    } else {
-      // selected for delete
-      this.setState({ selectedForDelete: reservation });
-    }
+  handleClickRow = id => {
+    this.setState({ selectedForEdit: id });
   };
 
   handleNewReservation = e => {
     let now = new Date();
     let later = new Date(now);
     later.setHours(17, 30, 0, 0);
-    this.setState({
-      selectedForEdit: {
-        _id: null,
-        name: "",
-        playerid: "8r",
-        from: now.toUTCString(),
-        to: later.toUTCString()
-      }
-    });
-  };
-
-  handleReservationFormChange = change => {
-    this.setState({
-      selectedForEdit: {
-        ...this.state.selectedForEdit,
-        ...change
-      }
-    });
   };
 
   handleSaveReservation = e => {
     let obj = this.state.selectedForEdit;
     this.setState({ selectedForEdit: null });
 
-    if (this.state.selectedForEdit._id == null) {
+    if (this.state.selectedForEdit == null) {
       // post request
 
       delete obj._id;
@@ -187,7 +131,7 @@ class Table extends Component {
         </Typography>
         <List>
           <Grid container>
-            <TableRow
+            {/* <TableRow
               head
               onDelete={this.handleDeleteMany(this.state.selected)}
               onCheckboxChange={this.handleSelectAll(
@@ -205,8 +149,8 @@ class Table extends Component {
                 from: "From",
                 to: "To"
               }}
-            />
-            {!this.state.reservations.length && (
+            /> */}
+            {!this.props.reservations.length && (
               <div
                 style={{
                   textAlign: "center",
@@ -218,15 +162,14 @@ class Table extends Component {
                 - No Reservations -
               </div>
             )}
-            {this.state.reservations.map((reservation, i) => (
+            {this.props.reservations.map(doc => (
               <TableRow
-                key={i}
-                selected={this.state.selected.includes(reservation._id)}
-                onDelete={this.handleDelete([reservation._id])}
-                onDeleteClick={this.handleDeleteRequest(reservation)}
-                reservation={reservation}
-                isLast={i === this.state.reservations.length - 1}
-                onCheckboxChange={this.handleCheckboxChange(reservation._id)}
+                key={doc.id}
+                selected={this.state.selected.includes(doc.id)}
+                onDelete={this.handleDelete}
+                onRowClick={this.handleClickRow}
+                reservation={{ ...doc.data(), id: doc.id }}
+                onCheckboxChange={this.handleCheckboxChange(doc.id)}
               />
             ))}
           </Grid>
@@ -254,9 +197,10 @@ class Table extends Component {
           <EditDialog
             open
             onClose={this.handleCancelEdit}
-            onChange={this.handleReservationFormChange}
             onSave={this.handleSaveReservation}
-            reservation={this.state.selectedForEdit}
+            reservation={this.props.reservations.find(
+              res => res.id === this.state.selectedForEdit
+            )}
           />
         )}
       </Paper>
