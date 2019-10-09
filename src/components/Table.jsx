@@ -1,51 +1,46 @@
 import React, { Component } from "react";
 import TableRow from "./TableRow";
+import TableHead from "./TableHead";
 import DeleteDialog from "./DeleteDialog";
 import EditDialog from "./EditDialog";
 import { Grid, List, Paper, Typography, Button } from "@material-ui/core";
 
 class Table extends Component {
   state = {
-    deleteConfirmation: {
-      open: false,
-      ids: []
-    },
-    selectedForDelete: null,
+    deletePromptOpen: false,
     selectedForEdit: null,
     selected: []
   };
 
-  handleDeleteMany = ids => e => {
+  componentWillUpdate(nextProps, nextState) {
+    if (nextProps.reservations.length < this.props.reservations.length)
+      this.setState({ selected: [] });
+  }
+
+  handleDeleteMany = () => {
     this.setState({
-      deleteConfirmation: {
-        open: true,
-        ids: ids
-      }
+      deletePromptOpen: true
     });
   };
 
   handleDelete = id => {
-    // send delete request to backend
+    console.log("delete id: ", id);
 
-    console.log("id: ", id);
-
-    // this.setState({
-    //   reservations: this.state.reservations.filter(
-    //     reservation => !ids.includes(reservation._id)
-    //   ),
-    //   selected: this.state.selected.filter(id => !ids.includes(id))
-    // });
+    // send delete request to Firebase
+    // it will auto-update the table
+    this.props.onDeleteDocument(id);
   };
 
-  handleSelectAll = onlySomeSelected => (e, checked) => {
-    if (onlySomeSelected || !checked) {
-      this.setState({ selected: [] });
-    } else {
-      this.setState({ selected: this.state.reservations.map(res => res._id) });
-    }
+  handleSelectAll = (e, checked) => {
+    this.setState({
+      selected:
+        checked && !this.state.selected.length
+          ? this.props.reservations.map(res => res.id)
+          : []
+    });
   };
 
-  handleCheckboxChange = id => (e, checked) => {
+  handleRowCheckbox = (id, checked) => {
     if (checked) {
       this.setState({
         selected: [...this.state.selected, id]
@@ -59,17 +54,15 @@ class Table extends Component {
 
   handleClose = willDelete => e => {
     this.setState({
-      deleteConfirmation: {
-        ...this.state.deleteConfirmation,
-        open: false
-      }
+      deletePromptOpen: false
     });
 
-    if (willDelete) this.handleDelete(this.state.deleteConfirmation.ids)();
+    if (willDelete) this.props.onDeleteDocuments(this.state.selected);
   };
 
   handleClickRow = id => {
     this.setState({ selectedForEdit: id });
+    console.log("edit id: ", id);
   };
 
   handleNewReservation = e => {
@@ -131,25 +124,15 @@ class Table extends Component {
         </Typography>
         <List>
           <Grid container>
-            {/* <TableRow
-              head
-              onDelete={this.handleDeleteMany(this.state.selected)}
-              onCheckboxChange={this.handleSelectAll(
-                this.state.selected.length &&
-                  this.state.selected.length !== this.state.reservations.length
-              )}
+            <TableHead
               selected={
-                this.state.selected.length === this.state.reservations.length &&
-                this.state.reservations.length !== 0
+                this.state.selected.length &&
+                this.state.selected.length === this.props.reservations.length
               }
               someSelected={this.state.selected.length}
-              reservation={{
-                playerid: "Space",
-                name: "Reserved For",
-                from: "From",
-                to: "To"
-              }}
-            /> */}
+              onCheckboxChange={this.handleSelectAll}
+              onDelete={this.handleDeleteMany}
+            />
             {!this.props.reservations.length && (
               <div
                 style={{
@@ -169,7 +152,7 @@ class Table extends Component {
                 onDelete={this.handleDelete}
                 onRowClick={this.handleClickRow}
                 reservation={{ ...doc.data(), id: doc.id }}
-                onCheckboxChange={this.handleCheckboxChange(doc.id)}
+                onCheckboxChange={this.handleRowCheckbox}
               />
             ))}
           </Grid>
@@ -177,6 +160,7 @@ class Table extends Component {
         <Button
           variant="outlined"
           color="primary"
+          style={{ marginTop: 5 }}
           onClick={this.handleNewReservation}
         >
           <i
@@ -190,7 +174,8 @@ class Table extends Component {
           Create Reservation
         </Button>
         <DeleteDialog
-          deleteConfirmation={this.state.deleteConfirmation}
+          open={this.state.deletePromptOpen}
+          length={this.state.selected.length}
           onClose={this.handleClose}
         />
         {this.state.selectedForEdit && (

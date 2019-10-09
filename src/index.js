@@ -38,6 +38,25 @@ class App extends React.Component {
     });
   }
 
+  handleDeleteDocument = id => {
+    db.collection("reservations")
+      .doc(id)
+      .delete()
+      .then(() => console.log("document deleted"))
+      .catch(e => console.error("error deleting: ", e));
+  };
+
+  handleDeleteDocuments = ids => {
+    let batch = db.batch();
+    for (let id in ids) {
+      batch.delete(db.collection("reservations").doc(ids[id]));
+    }
+    batch
+      .commit()
+      .then(() => console.log(`deleted ${ids.length} docs`))
+      .catch(e => console.log("error deleting: ", e));
+  };
+
   render() {
     return (
       <ThemeProvider theme={theme}>
@@ -49,7 +68,11 @@ class App extends React.Component {
           </AppBar>
           <Grid container>
             <Grid item xs={12} md={8} lg={6}>
-              <Table reservations={this.state.reservations} />
+              <Table
+                reservations={this.state.reservations}
+                onDeleteDocument={this.handleDeleteDocument}
+                onDeleteDocuments={this.handleDeleteDocuments}
+              />
             </Grid>
           </Grid>
         </div>

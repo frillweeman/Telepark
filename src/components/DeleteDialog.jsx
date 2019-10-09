@@ -11,16 +11,13 @@ import {
 class DeleteDialog extends Component {
   render() {
     return (
-      <Dialog
-        open={this.props.deleteConfirmation.open}
-        onClose={this.props.onClose(false)}
-      >
+      <Dialog open={this.props.open} onClose={this.props.onClose(false)}>
         <DialogTitle>Delete Reservation</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete{" "}
-            {this.props.deleteConfirmation.ids.length} parking reservation
-            {this.props.deleteConfirmation.ids.length > 1 ? "s" : ""}?
+            Are you sure you want to delete {this.props.length} parking
+            reservation
+            {this.props.length > 1 ? "s" : ""}?
           </DialogContentText>
         </DialogContent>
         <DialogActions>

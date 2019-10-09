@@ -33,16 +33,26 @@ const classes = {
 
 class EditDialog extends Component {
   state = {
-    from: new Date(this.props.reservation.from).toLocaleTimeString([], {
-      hour12: false,
-      hour: "numeric",
-      minute: "2-digit"
-    }),
-    to: new Date(this.props.reservation.to).toLocaleTimeString([], {
-      hour12: false,
-      hour: "numeric",
-      minute: "2-digit"
-    })
+    reservation: {
+      ...this.props.reservation.data(),
+      id: this.props.reservation.id
+    },
+    from: this.props.reservation
+      .data()
+      .from.toDate()
+      .toLocaleTimeString([], {
+        hour12: false,
+        hour: "numeric",
+        minute: "2-digit"
+      }),
+    to: this.props.reservation
+      .data()
+      .to.toDate()
+      .toLocaleTimeString([], {
+        hour12: false,
+        hour: "numeric",
+        minute: "2-digit"
+      })
   };
 
   handleDayChange = e => {
@@ -84,7 +94,7 @@ class EditDialog extends Component {
         to: date.toUTCString()
       });
 
-      console.log("new to", this.props.reservation.to);
+      console.log("new to", this.state.reservation.to);
     }
   };
 
@@ -97,7 +107,7 @@ class EditDialog extends Component {
         maxWidth="sm"
       >
         <DialogTitle>
-          {this.props.reservation._id ? "Edit" : "Create"} Reservation
+          {this.state.reservation._id ? "Edit" : "Create"} Reservation
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
@@ -105,10 +115,10 @@ class EditDialog extends Component {
               style={{ ...classes.formControl, ...classes.fullWidth }}
             >
               <TextField
-                id="name"
-                label="Name"
-                value={this.props.reservation.name}
-                onChange={this.handleTextFieldChange("name")}
+                id="for"
+                label="for"
+                value={this.state.reservation.for}
+                onChange={this.handleTextFieldChange("for")}
                 fullWidth
               />
             </FormControl>
@@ -145,9 +155,9 @@ class EditDialog extends Component {
               <FormLabel component="legend">Days</FormLabel>
               <RadioGroup
                 aria-label="days"
-                name="days"
+                htmlFor="days"
                 value={
-                  new Date(this.props.reservation.to).getUTCDate() ===
+                  new Date(this.state.reservation.to).getUTCDate() ===
                   new Date().getUTCDate()
                     ? "0"
                     : "1"
@@ -166,7 +176,7 @@ class EditDialog extends Component {
                   label="Until Date"
                 ></FormControlLabel>
               </RadioGroup>
-              {new Date(this.props.reservation.to).getUTCDate() !==
+              {new Date(this.state.reservation.to).getUTCDate() !==
                 new Date().getUTCDate() && (
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <KeyboardDatePicker
@@ -175,7 +185,7 @@ class EditDialog extends Component {
                     format="MM/dd/yyyy"
                     id="date-picker-inline"
                     label="End Date"
-                    value={new Date(this.props.reservation.to)}
+                    value={new Date(this.state.reservation.to)}
                     onChange={this.handleDateFieldChange}
                     KeyboardButtonProps={{
                       "aria-label": "change date"
@@ -211,7 +221,7 @@ class EditDialog extends Component {
             variant="outlined"
             onClick={this.props.onSave}
           >
-            {this.props.reservation._id ? "Update" : "Create"}
+            {this.state.reservation._id ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

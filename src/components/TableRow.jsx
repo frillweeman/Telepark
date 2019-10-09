@@ -8,26 +8,19 @@ import {
 } from "@material-ui/core";
 
 const style = {
-  // head: {
-  //   color: "#5d5d5d",
-  //   fontSize: "0.8em",
-  //   textAlign: "center",
-  //   paddingBottom: 0,
-  //   fontWeight: 600
-  // },
   body: {
     textAlign: "center"
   }
 };
 
 class TableRow extends Component {
-  state = {};
-
   handleClickRow = e => {
-    const edit = e.target.tagName === "DIV";
+    if (e.target.tagName === "DIV")
+      this.props.onRowClick(this.props.reservation.id);
+  };
 
-    if (edit) this.props.onRowClick(this.props.reservation.id);
-    else this.props.onDelete(this.props.reservation.id);
+  handleCheckboxChange = (e, checked) => {
+    this.props.onCheckboxChange(this.props.reservation.id, checked);
   };
 
   render() {
@@ -37,11 +30,16 @@ class TableRow extends Component {
           <Grid item sm={1}>
             <Checkbox
               checked={this.props.selected}
-              onChange={this.props.onCheckboxChange}
+              onChange={this.handleCheckboxChange}
             />
           </Grid>
           <Grid item sm={1}>
-            <IconButton>
+            <IconButton
+              onClick={this.props.onDelete.bind(
+                null,
+                this.props.reservation.id
+              )}
+            >
               <i className="material-icons">delete</i>
             </IconButton>
           </Grid>
@@ -52,26 +50,18 @@ class TableRow extends Component {
         <Grid
           item
           xs={4}
-          style={
-            !this.props.head
-              ? {
-                  textTransform: "none",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden"
-                }
-              : {}
-          }
+          style={{
+            textTransform: "none",
+            whiteSpace: "nowrap",
+            overflow: "hidden"
+          }}
         >
           {this.props.reservation.for}
         </Grid>
         <Grid
           item
           xs={3}
-          style={
-            !this.props.head
-              ? { color: "red", whiteSpace: "nowrap", overflow: "hidden" }
-              : {}
-          }
+          style={{ color: "red", whiteSpace: "nowrap", overflow: "hidden" }}
         >
           {this.props.reservation.from.toDate().toLocaleTimeString([], {
             hour: "numeric",
