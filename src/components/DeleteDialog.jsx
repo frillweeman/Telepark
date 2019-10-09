@@ -11,7 +11,10 @@ import {
 class DeleteDialog extends Component {
   render() {
     return (
-      <Dialog open={this.props.open} onClose={this.props.onClose(false)}>
+      <Dialog
+        open={this.props.open}
+        onClose={this.props.onClose.bind(null, false)}
+      >
         <DialogTitle>Delete Reservation</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -21,8 +24,11 @@ class DeleteDialog extends Component {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={this.props.onClose(false)}>Cancel</Button>
-          <Button onClick={this.props.onClose(true)} color="secondary">
+          <Button onClick={this.props.onClose.bind(null, false)}>Cancel</Button>
+          <Button
+            onClick={this.props.onClose.bind(null, true)}
+            color="secondary"
+          >
             Delete
           </Button>
         </DialogActions>

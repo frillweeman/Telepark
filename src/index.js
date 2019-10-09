@@ -62,9 +62,7 @@ class App extends React.Component {
       <ThemeProvider theme={theme}>
         <div className="App">
           <AppBar position="static">
-            <Toolbar>
-              <Typography variant="h4">SSB Parking</Typography>
-            </Toolbar>
+            <img src="/telepark.svg" style={{ height: 50, padding: 10 }} />
           </AppBar>
           <Grid container>
             <Grid item xs={12} md={8} lg={6}>

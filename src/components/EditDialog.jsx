@@ -1,3 +1,14 @@
+/*
+ * TO DO
+ * - move # of spaces inline with name
+ * - display data correctly in Edit Dialog
+ * - implement updating document from Edit Dialog
+ * - add create reservation functionality
+ *
+ * - decide whether to ask user for space or autochoose
+ * - change space (player_id) to array, represent change
+ */
+
 import React, { Component } from "react";
 import {
   Dialog,
@@ -33,26 +44,32 @@ const classes = {
 
 class EditDialog extends Component {
   state = {
-    reservation: {
-      ...this.props.reservation.data(),
-      id: this.props.reservation.id
-    },
-    from: this.props.reservation
-      .data()
-      .from.toDate()
-      .toLocaleTimeString([], {
-        hour12: false,
-        hour: "numeric",
-        minute: "2-digit"
-      }),
-    to: this.props.reservation
-      .data()
-      .to.toDate()
-      .toLocaleTimeString([], {
-        hour12: false,
-        hour: "numeric",
-        minute: "2-digit"
-      })
+    reservation: this.props.reservation.data(),
+    id: this.props.reservation.id,
+    dateFields: {
+      from: {
+        date: "",
+        time: this.props.reservation
+          .data()
+          .from.toDate()
+          .toLocaleTimeString([], {
+            hour12: false,
+            hour: "numeric",
+            minute: "2-digit"
+          })
+      },
+      to: {
+        date: "",
+        time: this.props.reservation
+          .data()
+          .to.toDate()
+          .toLocaleTimeString([], {
+            hour12: false,
+            hour: "numeric",
+            minute: "2-digit"
+          })
+      }
+    }
   };
 
   handleDayChange = e => {
@@ -107,7 +124,7 @@ class EditDialog extends Component {
         maxWidth="sm"
       >
         <DialogTitle>
-          {this.state.reservation._id ? "Edit" : "Create"} Reservation
+          {this.state.id ? "Edit" : "Create"} Reservation
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
@@ -127,9 +144,9 @@ class EditDialog extends Component {
             >
               <TextField
                 id="start-time"
-                label="Start Time"
+                label="start time"
                 type="time"
-                value={this.state.from}
+                value={this.state.dateFields.from.time}
                 onChange={this.handleTimeChange("from")}
                 inputProps={{
                   step: 300
@@ -139,9 +156,9 @@ class EditDialog extends Component {
             <FormControl style={classes.formControl}>
               <TextField
                 id="end-time"
-                label="End Time"
+                label="end time"
                 type="time"
-                value={this.state.to}
+                value={this.state.dateFields.to.time}
                 onChange={this.handleTimeChange("to")}
                 inputProps={{
                   step: 300
@@ -157,8 +174,8 @@ class EditDialog extends Component {
                 aria-label="days"
                 htmlFor="days"
                 value={
-                  new Date(this.state.reservation.to).getUTCDate() ===
-                  new Date().getUTCDate()
+                  this.state.reservation.to.toDate().getDate() ===
+                  new Date().getDate()
                     ? "0"
                     : "1"
                 }
@@ -176,8 +193,8 @@ class EditDialog extends Component {
                   label="Until Date"
                 ></FormControlLabel>
               </RadioGroup>
-              {new Date(this.state.reservation.to).getUTCDate() !==
-                new Date().getUTCDate() && (
+              {this.state.reservation.to.toDate().getDate() !==
+                new Date().getDate() && (
                 <MuiPickersUtilsProvider utils={DateFnsUtils}>
                   <KeyboardDatePicker
                     disableToolbar
@@ -185,7 +202,7 @@ class EditDialog extends Component {
                     format="MM/dd/yyyy"
                     id="date-picker-inline"
                     label="End Date"
-                    value={new Date(this.state.reservation.to)}
+                    value={this.state.reservation.to.toDate()}
                     onChange={this.handleDateFieldChange}
                     KeyboardButtonProps={{
                       "aria-label": "change date"
@@ -221,7 +238,7 @@ class EditDialog extends Component {
             variant="outlined"
             onClick={this.props.onSave}
           >
-            {this.state.reservation._id ? "Update" : "Create"}
+            {this.state.id ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

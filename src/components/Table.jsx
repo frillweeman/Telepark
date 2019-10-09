@@ -12,25 +12,30 @@ class Table extends Component {
     selected: []
   };
 
+  // ToDo: if reservation deleted, remove its document id from selected[]
+  // right now, it just empties the array (not optimal)
   componentWillUpdate(nextProps, nextState) {
     if (nextProps.reservations.length < this.props.reservations.length)
       this.setState({ selected: [] });
   }
 
+  // delete many (open dialog)
   handleDeleteMany = () => {
     this.setState({
       deletePromptOpen: true
     });
   };
 
-  handleDelete = id => {
-    console.log("delete id: ", id);
+  // delete many dialog closed
+  handleClose = willDelete => {
+    this.setState({
+      deletePromptOpen: false
+    });
 
-    // send delete request to Firebase
-    // it will auto-update the table
-    this.props.onDeleteDocument(id);
+    if (willDelete) this.props.onDeleteDocuments(this.state.selected);
   };
 
+  // select all checkbox is changed
   handleSelectAll = (e, checked) => {
     this.setState({
       selected:
@@ -40,6 +45,7 @@ class Table extends Component {
     });
   };
 
+  // individual checkbox change in a row
   handleRowCheckbox = (id, checked) => {
     if (checked) {
       this.setState({
@@ -52,63 +58,57 @@ class Table extends Component {
     }
   };
 
-  handleClose = willDelete => e => {
-    this.setState({
-      deletePromptOpen: false
-    });
-
-    if (willDelete) this.props.onDeleteDocuments(this.state.selected);
-  };
-
+  // row is clicked for edit
   handleClickRow = id => {
     this.setState({ selectedForEdit: id });
     console.log("edit id: ", id);
   };
 
+  // create reservation clicked
   handleNewReservation = e => {
     let now = new Date();
     let later = new Date(now);
     later.setHours(17, 30, 0, 0);
   };
 
-  handleSaveReservation = e => {
-    let obj = this.state.selectedForEdit;
-    this.setState({ selectedForEdit: null });
+  // handleSaveReservation = e => {
+  //   let obj = this.state.selectedForEdit;
+  //   this.setState({ selectedForEdit: null });
 
-    if (this.state.selectedForEdit == null) {
-      // post request
+  //   if (this.state.selectedForEdit == null) {
+  //     // post request
 
-      delete obj._id;
+  //     delete obj._id;
 
-      fetch("/api/reservations", {
-        method: "POST",
-        body: JSON.stringify(obj),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-        .then(res => res.json())
-        .then(res => {
-          this.componentDidMount();
-          console.log(res);
-        });
-    } else {
-      // put request
+  //     fetch("/api/reservations", {
+  //       method: "POST",
+  //       body: JSON.stringify(obj),
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       }
+  //     })
+  //       .then(res => res.json())
+  //       .then(res => {
+  //         this.componentDidMount();
+  //         console.log(res);
+  //       });
+  //   } else {
+  //     // put request
 
-      fetch("/api/reservations", {
-        method: "PUT",
-        body: JSON.stringify(obj),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      })
-        .then(res => res.json())
-        .then(res => {
-          this.componentDidMount();
-          console.log(res);
-        });
-    }
-  };
+  //     fetch("/api/reservations", {
+  //       method: "PUT",
+  //       body: JSON.stringify(obj),
+  //       headers: {
+  //         "Content-Type": "application/json"
+  //       }
+  //     })
+  //       .then(res => res.json())
+  //       .then(res => {
+  //         this.componentDidMount();
+  //         console.log(res);
+  //       });
+  //   }
+  // };
 
   handleCancelEdit = e => {
     this.setState({
@@ -149,7 +149,7 @@ class Table extends Component {
               <TableRow
                 key={doc.id}
                 selected={this.state.selected.includes(doc.id)}
-                onDelete={this.handleDelete}
+                onDelete={this.props.onDeleteDocument}
                 onRowClick={this.handleClickRow}
                 reservation={{ ...doc.data(), id: doc.id }}
                 onCheckboxChange={this.handleRowCheckbox}
