@@ -24,6 +24,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 var db = firebase.firestore();
+let reservationsCollectionRef = db.collection("reservations");
 // End Firebase Configuration
 
 class App extends React.Component {
@@ -33,13 +34,13 @@ class App extends React.Component {
 
   // set up callback for real time database changes
   componentDidMount() {
-    db.collection("reservations").onSnapshot(snapshot => {
+    reservationsCollectionRef.onSnapshot(snapshot => {
       this.setState({ reservations: snapshot.docs });
     });
   }
 
   handleDeleteDocument = id => {
-    db.collection("reservations")
+    reservationsCollectionRef
       .doc(id)
       .delete()
       .then(() => console.log("document deleted"))
@@ -49,12 +50,27 @@ class App extends React.Component {
   handleDeleteDocuments = ids => {
     let batch = db.batch();
     for (let id in ids) {
-      batch.delete(db.collection("reservations").doc(ids[id]));
+      batch.delete(reservationsCollectionRef.doc(ids[id]));
     }
     batch
       .commit()
       .then(() => console.log(`deleted ${ids.length} docs`))
       .catch(e => console.log("error deleting: ", e));
+  };
+
+  handleUpdateDocument = (id, newDocument) => {
+    reservationsCollectionRef
+      .doc(id)
+      .set(newDocument)
+      .then(() => console.log("updated document"))
+      .catch(e => console.error("error updating: ", e));
+  };
+
+  handleCreateDocument = newDocument => {
+    reservationsCollectionRef
+      .add(newDocument)
+      .then(() => console.log("added document"))
+      .catch(e => console.error("error adding document: ", e));
   };
 
   render() {
@@ -70,6 +86,8 @@ class App extends React.Component {
                 reservations={this.state.reservations}
                 onDeleteDocument={this.handleDeleteDocument}
                 onDeleteDocuments={this.handleDeleteDocuments}
+                onUpdateDocument={this.handleUpdateDocument}
+                onCreateDocument={this.handleCreateDocument}
               />
             </Grid>
           </Grid>

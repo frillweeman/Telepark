@@ -5,6 +5,18 @@ import DeleteDialog from "./DeleteDialog";
 import EditDialog from "./EditDialog";
 import { Grid, List, Paper, Typography, Button } from "@material-ui/core";
 
+function getCurrentWeekday(beginning) {
+  const d = new Date();
+  if (!d.getDay() || d.getDay() > 5) {
+    d.setDate(d.getDate() + ((1 + 7 - d.getDay()) % 7));
+    d.setHours(beginning ? 8 : 17, 0, 0);
+  } else if (!beginning) {
+    d.setHours(17, 0, 0);
+  }
+  console.log(d);
+  return d;
+}
+
 class Table extends Component {
   state = {
     deletePromptOpen: false,
@@ -66,49 +78,8 @@ class Table extends Component {
 
   // create reservation clicked
   handleNewReservation = e => {
-    let now = new Date();
-    let later = new Date(now);
-    later.setHours(17, 30, 0, 0);
+    this.setState({ selectedForEdit: "new" });
   };
-
-  // handleSaveReservation = e => {
-  //   let obj = this.state.selectedForEdit;
-  //   this.setState({ selectedForEdit: null });
-
-  //   if (this.state.selectedForEdit == null) {
-  //     // post request
-
-  //     delete obj._id;
-
-  //     fetch("/api/reservations", {
-  //       method: "POST",
-  //       body: JSON.stringify(obj),
-  //       headers: {
-  //         "Content-Type": "application/json"
-  //       }
-  //     })
-  //       .then(res => res.json())
-  //       .then(res => {
-  //         this.componentDidMount();
-  //         console.log(res);
-  //       });
-  //   } else {
-  //     // put request
-
-  //     fetch("/api/reservations", {
-  //       method: "PUT",
-  //       body: JSON.stringify(obj),
-  //       headers: {
-  //         "Content-Type": "application/json"
-  //       }
-  //     })
-  //       .then(res => res.json())
-  //       .then(res => {
-  //         this.componentDidMount();
-  //         console.log(res);
-  //       });
-  //   }
-  // };
 
   handleCancelEdit = e => {
     this.setState({
@@ -182,10 +153,26 @@ class Table extends Component {
           <EditDialog
             open
             onClose={this.handleCancelEdit}
-            onSave={this.handleSaveReservation}
-            reservation={this.props.reservations.find(
-              res => res.id === this.state.selectedForEdit
-            )}
+            onUpdateDocument={this.props.onUpdateDocument}
+            onCreateDocument={this.props.onCreateDocument}
+            reservation={
+              this.state.selectedForEdit === "new"
+                ? {
+                    for: "",
+                    from: getCurrentWeekday(true),
+                    to: getCurrentWeekday(false)
+                  }
+                : this.props.reservations
+                    .find(res => res.id === this.state.selectedForEdit)
+                    .data()
+            }
+            id={
+              this.state.selectedForEdit === "new"
+                ? "new"
+                : this.props.reservations.find(
+                    res => res.id === this.state.selectedForEdit
+                  ).id
+            }
           />
         )}
       </Paper>

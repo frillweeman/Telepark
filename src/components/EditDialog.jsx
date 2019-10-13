@@ -19,16 +19,15 @@ import {
   DialogActions,
   Button,
   TextField,
-  FormLabel,
-  RadioGroup,
-  Radio,
-  FormControlLabel
+  Container
 } from "@material-ui/core";
-import {
-  KeyboardDatePicker,
-  MuiPickersUtilsProvider
-} from "@material-ui/pickers";
-import DateFnsUtils from "@date-io/date-fns";
+import { DateRange } from "react-date-range";
+const moment = require("moment");
+
+// accept Firebase dates as well as standard dates
+Date.prototype.toDate = function() {
+  return this;
+};
 
 const classes = {
   formControl: {
@@ -42,77 +41,117 @@ const classes = {
   }
 };
 
+const calendarStyle = {
+  DateRange: {
+    background: "#ffffff"
+  },
+  Calendar: {
+    background: "transparent",
+    color: "#95a5a6",
+    boxShadow: "0 0 1px #eee",
+    width: "290px",
+    padding: "0px"
+  },
+  MonthAndYear: {
+    background: "#55B1E3",
+    color: "#fff",
+    padding: "20px 10px",
+    height: "auto"
+  },
+  MonthButton: {
+    background: "#fff"
+  },
+  MonthArrowPrev: {
+    borderRightColor: "#55B1E3"
+  },
+  MonthArrowNext: {
+    borderLeftColor: "#55B1E3"
+  },
+  Weekday: {
+    background: "#3AA6DF",
+    color: "#fff",
+    padding: "10px",
+    height: "auto",
+    fontWeight: "normal"
+  },
+  Day: {
+    transition: "transform .1s ease, box-shadow .1s ease, background .1s ease"
+  },
+  DaySelected: {
+    background: "#55B1E3"
+  },
+  DayActive: {
+    background: "#55B1E3",
+    boxShadow: "none"
+  },
+  DayInRange: {
+    background: "#eee",
+    color: "#55B1E3"
+  },
+  DayHover: {
+    background: "#4f4f4f",
+    color: "#fff"
+  }
+};
+
 class EditDialog extends Component {
   state = {
-    reservation: this.props.reservation.data(),
-    id: this.props.reservation.id,
-    dateFields: {
-      from: {
-        date: "",
-        time: this.props.reservation
-          .data()
-          .from.toDate()
-          .toLocaleTimeString([], {
-            hour12: false,
-            hour: "numeric",
-            minute: "2-digit"
-          })
-      },
-      to: {
-        date: "",
-        time: this.props.reservation
-          .data()
-          .to.toDate()
-          .toLocaleTimeString([], {
-            hour12: false,
-            hour: "numeric",
-            minute: "2-digit"
-          })
-      }
-    }
+    id: this.props.id,
+    for: this.props.reservation.for,
+    numSpaces: 1,
+    startDate: moment(this.props.reservation.from.toDate()),
+    endDate: moment(this.props.reservation.to.toDate()),
+    startTime: moment(this.props.reservation.from.toDate()),
+    endTime: moment(this.props.reservation.to.toDate())
   };
 
-  handleDayChange = e => {
-    // if (e.target.value === "1")
-    //   this.props.onChange({
-    //     to: new Date().setDate(new Date().getDate() + 1)
-    //   });
-    // else
-    //   this.props.onChange({
-    //     to: new Date()
-    //   });
+  handleFieldChange = key => e => {
+    this.setState({ [key]: e.target.value });
   };
 
-  handleTextFieldChange = sender => e => {
-    this.props.onChange({
-      [sender]: e.target.value
+  handleSelect = range => {
+    this.setState(range);
+  };
+
+  handleTimeChange = key => e => {
+    const splitTime = e.target.value.split(":");
+
+    let newDate = this.state[key];
+    newDate.set({
+      hour: parseInt(splitTime[0]),
+      minute: parseInt(splitTime[1]),
+      second: 0
     });
-  };
 
-  handleTimeChange = sender => e => {
     this.setState({
-      [sender]: e.target.value
-    });
-
-    const timeSection = e.target.value.split(":");
-
-    let date = new Date();
-    date.setHours(timeSection[0], timeSection[1], 0);
-    let dateString = date.toUTCString();
-
-    this.props.onChange({
-      [sender]: dateString
+      [key]: newDate
     });
   };
 
-  handleDateFieldChange = date => {
-    if (!isNaN(date.getTime())) {
-      this.props.onChange({
-        to: date.toUTCString()
-      });
+  handleSubmit = () => {
+    const newReservation = {
+      for: this.state.for,
+      player_id: "8R",
+      from: this.state.startDate
+        .set({
+          hour: this.state.startTime.hour(),
+          minute: this.state.startTime.minute(),
+          second: 0
+        })
+        .toDate(),
+      to: this.state.endDate
+        .set({
+          hour: this.state.endTime.hour(),
+          minute: this.state.endTime.minute(),
+          second: 0
+        })
+        .toDate()
+    };
 
-      console.log("new to", this.state.reservation.to);
-    }
+    if (this.state.id === "new") this.props.onCreateDocument(newReservation);
+    else this.props.onUpdateDocument(this.state.id, newReservation);
+
+    this.props.onClose();
   };
 
   render() {
@@ -124,95 +163,30 @@ class EditDialog extends Component {
         maxWidth="sm"
       >
         <DialogTitle>
-          {this.state.id ? "Edit" : "Create"} Reservation
+          {this.state.id !== "new" ? "Edit" : "Create"} Reservation
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
             <FormControl
-              style={{ ...classes.formControl, ...classes.fullWidth }}
+              style={{
+                ...classes.formControl,
+                width: "70%"
+              }}
             >
               <TextField
                 id="for"
-                label="for"
-                value={this.state.reservation.for}
-                onChange={this.handleTextFieldChange("for")}
-                fullWidth
+                label="For"
+                value={this.state.for}
+                onChange={this.handleFieldChange("for")}
               />
             </FormControl>
             <FormControl
-              style={{ ...classes.formControl, ...classes.partialWidth }}
-            >
-              <TextField
-                id="start-time"
-                label="start time"
-                type="time"
-                value={this.state.dateFields.from.time}
-                onChange={this.handleTimeChange("from")}
-                inputProps={{
-                  step: 300
-                }}
-              />
-            </FormControl>
-            <FormControl style={classes.formControl}>
-              <TextField
-                id="end-time"
-                label="end time"
-                type="time"
-                value={this.state.dateFields.to.time}
-                onChange={this.handleTimeChange("to")}
-                inputProps={{
-                  step: 300
-                }}
-              />
-            </FormControl>
-            <FormControl
-              style={{ ...classes.formControl, ...classes.fullWidth }}
-              disabled
-            >
-              <FormLabel component="legend">Days</FormLabel>
-              <RadioGroup
-                aria-label="days"
-                htmlFor="days"
-                value={
-                  this.state.reservation.to.toDate().getDate() ===
-                  new Date().getDate()
-                    ? "0"
-                    : "1"
-                }
-                onChange={this.handleDayChange}
-                row
-              >
-                <FormControlLabel
-                  value="0"
-                  control={<Radio color="primary" />}
-                  label="Today Only"
-                ></FormControlLabel>
-                <FormControlLabel
-                  value="1"
-                  control={<Radio color="primary" />}
-                  label="Until Date"
-                ></FormControlLabel>
-              </RadioGroup>
-              {this.state.reservation.to.toDate().getDate() !==
-                new Date().getDate() && (
-                <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                  <KeyboardDatePicker
-                    disableToolbar
-                    variant="inline"
-                    format="MM/dd/yyyy"
-                    id="date-picker-inline"
-                    label="End Date"
-                    value={this.state.reservation.to.toDate()}
-                    onChange={this.handleDateFieldChange}
-                    KeyboardButtonProps={{
-                      "aria-label": "change date"
-                    }}
-                  />
-                </MuiPickersUtilsProvider>
-              )}
-            </FormControl>
-            <FormControl
-              style={{ ...classes.formControl, ...classes.partialWidth }}
+              style={{
+                ...classes.formControl,
+                ...classes.partialWidth,
+                float: "right",
+                width: "25%"
+              }}
               disabled
             >
               <TextField
@@ -221,14 +195,42 @@ class EditDialog extends Component {
                 type="number"
                 value="1"
               />
-              <FormHelperText>
-                Note: Only space 8R is available during testing.
-                <br />
-                <br />
-                Spaces automatically chosen prioritizing spaces near the front
-                of the building and keeping group reservations together.
-              </FormHelperText>
             </FormControl>
+            <FormHelperText style={classes.formControl}>
+              Note: Spaces automatically chosen prioritizing spaces near the
+              front of the building and keeping group reservations together.
+            </FormHelperText>
+            <FormControl
+              style={{
+                ...classes.formControl
+              }}
+            >
+              <DateRange
+                calendars={1}
+                theme={calendarStyle}
+                onChange={this.handleSelect}
+                disableDaysBeforeToday
+                startDate={this.state.startDate}
+                endDate={this.state.endDate}
+              />
+            </FormControl>
+            <Container style={{ display: "inline" }}>
+              <FormControl>
+                <TextField
+                  label="Start Time"
+                  type="time"
+                  value={this.state.startTime.format("HH:mm")}
+                  onChange={this.handleTimeChange("startTime")}
+                />
+                <br />
+                <TextField
+                  label="End Time"
+                  type="time"
+                  value={this.state.endTime.format("HH:mm")}
+                  onChange={this.handleTimeChange("endTime")}
+                />
+              </FormControl>
+            </Container>
           </form>
         </DialogContent>
         <DialogActions>
@@ -236,9 +238,9 @@ class EditDialog extends Component {
           <Button
             color="primary"
             variant="outlined"
-            onClick={this.props.onSave}
+            onClick={this.handleSubmit}
           >
-            {this.state.id ? "Update" : "Create"}
+            {this.state.id !== "new" ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>
