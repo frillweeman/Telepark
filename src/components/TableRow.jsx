@@ -61,7 +61,7 @@ class TableRow extends Component {
         <Grid
           item
           xs={3}
-          style={{ color: "red", whiteSpace: "nowrap", overflow: "hidden" }}
+          style={{ color: "#e66b00", whiteSpace: "nowrap", overflow: "hidden" }}
         >
           {this.props.reservation.from.toDate().toLocaleTimeString([], {
             hour: "numeric",
@@ -73,7 +73,7 @@ class TableRow extends Component {
           xs={3}
           style={
             !this.props.head
-              ? { color: "green", whiteSpace: "nowrap", overflow: "hidden" }
+              ? { color: "#e66b00", whiteSpace: "nowrap", overflow: "hidden" }
               : {}
           }
         >

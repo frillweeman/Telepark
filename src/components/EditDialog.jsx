@@ -1,9 +1,5 @@
 /*
  * TO DO
- * - move # of spaces inline with name
- * - display data correctly in Edit Dialog
- * - implement updating document from Edit Dialog
- * - add create reservation functionality
  *
  * - decide whether to ask user for space or autochoose
  * - change space (player_id) to array, represent change
@@ -178,6 +174,7 @@ class EditDialog extends Component {
                 label="For"
                 value={this.state.for}
                 onChange={this.handleFieldChange("for")}
+                autoFocus
               />
             </FormControl>
             <FormControl

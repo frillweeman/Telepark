@@ -3,11 +3,19 @@ import ReactDOM from "react-dom";
 
 import "./styles.css";
 import Table from "./components/Table";
-import { Grid, AppBar, Typography, Toolbar } from "@material-ui/core";
+import {
+  Grid,
+  AppBar,
+  Typography,
+  CircularProgress,
+  Paper,
+  Link
+} from "@material-ui/core";
 import theme from "./theme";
 import { ThemeProvider } from "@material-ui/styles";
 
 import firebase from "firebase/app";
+import "firebase/auth";
 import "firebase/firestore";
 
 // Firebase Configuration
@@ -21,7 +29,11 @@ const firebaseConfig = {
   appId: "1:183825692647:web:6af323bc5f709215baaf42"
 };
 
+var provider = new firebase.auth.GoogleAuthProvider();
+
 firebase.initializeApp(firebaseConfig);
+
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 var db = firebase.firestore();
 let reservationsCollectionRef = db.collection("reservations");
@@ -29,14 +41,25 @@ let reservationsCollectionRef = db.collection("reservations");
 
 class App extends React.Component {
   state = {
-    reservations: []
+    reservations: [],
+    validUser: true
   };
 
   // set up callback for real time database changes
   componentDidMount() {
-    reservationsCollectionRef.onSnapshot(snapshot => {
-      this.setState({ reservations: snapshot.docs });
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) console.log("current user: ", user);
+      else firebase.auth().signInWithRedirect(provider);
     });
+
+    reservationsCollectionRef.onSnapshot(
+      snapshot => {
+        this.setState({ reservations: snapshot.docs });
+      },
+      e => {
+        this.setState({ validUser: false });
+      }
+    );
   }
 
   handleDeleteDocument = id => {
@@ -81,15 +104,45 @@ class App extends React.Component {
             <img src="/telepark.svg" style={{ height: 50, padding: 10 }} />
           </AppBar>
           <Grid container>
-            <Grid item xs={12} md={8} lg={6}>
-              <Table
-                reservations={this.state.reservations}
-                onDeleteDocument={this.handleDeleteDocument}
-                onDeleteDocuments={this.handleDeleteDocuments}
-                onUpdateDocument={this.handleUpdateDocument}
-                onCreateDocument={this.handleCreateDocument}
-              />
-            </Grid>
+            {firebase.auth().currentUser ? (
+              this.state.validUser ? (
+                <Grid item xs={12} md={8} lg={6}>
+                  <Table
+                    reservations={this.state.reservations}
+                    onDeleteDocument={this.handleDeleteDocument}
+                    onDeleteDocuments={this.handleDeleteDocuments}
+                    onUpdateDocument={this.handleUpdateDocument}
+                    onCreateDocument={this.handleCreateDocument}
+                  />
+                </Grid>
+              ) : (
+                <Paper
+                  style={{
+                    padding: "1.5em",
+                    margin: "2em auto",
+                    textTransform: "none",
+                    maxWidth: 600
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    style={{ textAlign: "center", marginBottom: "1em" }}
+                  >
+                    Account Not Verified
+                  </Typography>
+                  <Typography variant="body1">
+                    Your account has not been verified for use with this
+                    application. Please&nbsp;
+                    <Link href="mailto:wgf0002@uah.edu">
+                      contact your manager
+                    </Link>
+                    &nbsp;for access.
+                  </Typography>
+                </Paper>
+              )
+            ) : (
+              <CircularProgress size={80} style={{ margin: "4em auto" }} />
+            )}
           </Grid>
         </div>
       </ThemeProvider>
