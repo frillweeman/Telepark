@@ -90,7 +90,10 @@ class Table extends Component {
   render() {
     return (
       <Paper style={{ padding: "1em 0", margin: "1em", textAlign: "center" }}>
-        <Typography variant="h5" style={{ textAlign: "center" }}>
+        <Typography
+          variant="h5"
+          style={{ textAlign: "center", textTransform: "uppercase" }}
+        >
           Reservations
         </Typography>
         <List>

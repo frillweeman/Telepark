@@ -9,7 +9,10 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  Link
+  Link,
+  Snackbar,
+  Button,
+  IconButton
 } from "@material-ui/core";
 import theme from "./theme";
 import { ThemeProvider } from "@material-ui/styles";
@@ -32,37 +35,56 @@ const firebaseConfig = {
 var provider = new firebase.auth.GoogleAuthProvider();
 
 firebase.initializeApp(firebaseConfig);
-
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 var db = firebase.firestore();
-let reservationsCollectionRef = db.collection("reservations");
+const usersCollectionRef = db.collection("users");
+const reservationsCollectionRef = db.collection("reservations");
 // End Firebase Configuration
 
 class App extends React.Component {
   state = {
     reservations: [],
-    validUser: true
+    validUser: false,
+    lastDeletedReservation: null
   };
+
+  constructor(props) {
+    super(props);
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        firebase.auth().signInWithRedirect(provider);
+        return;
+      }
+
+      console.log("current user: ", user.uid);
+
+      usersCollectionRef
+        .doc(user.uid)
+        .get()
+        .then(doc => {
+          console.log("is admin: ", doc.data().admin);
+          if (doc.exists && doc.data().admin)
+            this.setState({ validUser: true });
+        })
+        .catch(e => {
+          console.log("user not in users database");
+        });
+    });
+  }
 
   // set up callback for real time database changes
   componentDidMount() {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) console.log("current user: ", user);
-      else firebase.auth().signInWithRedirect(provider);
+    reservationsCollectionRef.onSnapshot(snapshot => {
+      this.setState({ reservations: snapshot.docs });
     });
-
-    reservationsCollectionRef.onSnapshot(
-      snapshot => {
-        this.setState({ reservations: snapshot.docs });
-      },
-      e => {
-        this.setState({ validUser: false });
-      }
-    );
   }
 
   handleDeleteDocument = id => {
+    // save in state as last deleted doc, show undo snackbar
+    const resToDelete = this.state.reservations.find(res => res.id === id);
+    this.setState({ lastDeletedReservation: resToDelete });
     reservationsCollectionRef
       .doc(id)
       .delete()
@@ -96,6 +118,13 @@ class App extends React.Component {
       .catch(e => console.error("error adding document: ", e));
   };
 
+  handleUndo = () => {
+    this.handleCreateDocument(this.state.lastDeletedReservation.data());
+
+    // clear last deleted from state
+    this.setState({ lastDeletedReservation: null });
+  };
+
   render() {
     return (
       <ThemeProvider theme={theme}>
@@ -124,26 +153,79 @@ class App extends React.Component {
                     maxWidth: 600
                   }}
                 >
-                  <Typography
-                    variant="h6"
-                    style={{ textAlign: "center", marginBottom: "1em" }}
-                  >
-                    Account Not Verified
-                  </Typography>
-                  <Typography variant="body1">
-                    Your account has not been verified for use with this
-                    application. Please&nbsp;
-                    <Link href="mailto:wgf0002@uah.edu">
-                      contact your manager
-                    </Link>
-                    &nbsp;for access.
-                  </Typography>
+                  {" "}
+                  {firebase.auth().currentUser.email.includes("uah.edu") ? (
+                    <React.Fragment>
+                      <Typography
+                        variant="h6"
+                        style={{ textAlign: "center", marginBottom: "1em" }}
+                      >
+                        Account Not Verified
+                      </Typography>
+                      <Typography variant="body1">
+                        Your account has not been verified for use with this
+                        application. Please&nbsp;
+                        <Link href="mailto:wgf0002@uah.edu">
+                          contact your manager
+                        </Link>
+                        &nbsp;for access.
+                      </Typography>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <Typography
+                        variant="h6"
+                        style={{ textAlign: "center", marginBottom: "1em" }}
+                      >
+                        Wrong Account
+                      </Typography>
+                      <Typography variant="body1">
+                        You are not signed in with a UAH Google account.
+                        Please&nbsp;
+                        <Link
+                          href=""
+                          onClick={() => {
+                            firebase.auth().signOut();
+                          }}
+                        >
+                          log out
+                        </Link>
+                        &nbsp;and try again.
+                      </Typography>
+                    </React.Fragment>
+                  )}
                 </Paper>
               )
             ) : (
               <CircularProgress size={80} style={{ margin: "4em auto" }} />
             )}
           </Grid>
+          <Snackbar
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left"
+            }}
+            open={this.state.lastDeletedReservation}
+            autoHideDuration={6000}
+            onClose={() => {
+              this.setState({ lastDeletedReservation: null });
+            }}
+            message="Reservation Deleted"
+            action={[
+              <Button color="secondary" size="small" onClick={this.handleUndo}>
+                UNDO
+              </Button>,
+              <IconButton
+                onClick={() => {
+                  this.setState({ lastDeletedReservation: null });
+                }}
+              >
+                <i className="material-icons" style={{ color: "white" }}>
+                  close
+                </i>
+              </IconButton>
+            ]}
+          />
         </div>
       </ThemeProvider>
     );

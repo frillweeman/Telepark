@@ -7,6 +7,19 @@ import {
   Hidden
 } from "@material-ui/core";
 
+const isToday = someDate => {
+  const today = new Date();
+  return (
+    someDate.getDate() == today.getDate() &&
+    someDate.getMonth() == today.getMonth() &&
+    someDate.getFullYear() == today.getFullYear()
+  );
+};
+
+const toShortDate = date => {
+  return `${date.getMonth() + 1}/${date.getDate()}`;
+};
+
 const style = {
   body: {
     textAlign: "center"
@@ -63,10 +76,12 @@ class TableRow extends Component {
           xs={3}
           style={{ color: "#e66b00", whiteSpace: "nowrap", overflow: "hidden" }}
         >
-          {this.props.reservation.from.toDate().toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-          })}
+          {isToday(this.props.reservation.from.toDate())
+            ? this.props.reservation.from.toDate().toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })
+            : toShortDate(this.props.reservation.from.toDate())}
         </Grid>
         <Grid
           item
@@ -77,10 +92,12 @@ class TableRow extends Component {
               : {}
           }
         >
-          {this.props.reservation.to.toDate().toLocaleTimeString([], {
-            hour: "numeric",
-            minute: "2-digit"
-          })}
+          {isToday(this.props.reservation.to.toDate())
+            ? this.props.reservation.to.toDate().toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit"
+              })
+            : toShortDate(this.props.reservation.to.toDate())}
         </Grid>
       </ListItem>
     );
