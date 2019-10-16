@@ -1,4 +1,7 @@
 node_modules/
+.firebaserc
+.DS_Store
+.firebase/
 .vscode/
 build/telepark.svg
 build/static/css/main.e75b15df.chunk.css
