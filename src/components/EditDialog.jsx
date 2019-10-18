@@ -10,14 +10,17 @@ import {
   Dialog,
   DialogContent,
   FormControl,
-  FormHelperText,
   DialogTitle,
   DialogActions,
   Button,
   TextField,
-  Container
+  FormLabel,
+  Grid,
+  Typography,
+  FormHelperText
 } from "@material-ui/core";
 import { DateRange } from "react-date-range";
+import SpaceSelector from "./SpaceSelector";
 const moment = require("moment");
 
 // accept Firebase dates as well as standard dates
@@ -45,7 +48,7 @@ const calendarStyle = {
     background: "transparent",
     color: "#95a5a6",
     boxShadow: "0 0 1px #eee",
-    width: "290px",
+    // width: "100%",
     padding: "0px"
   },
   MonthAndYear: {
@@ -163,71 +166,64 @@ class EditDialog extends Component {
         </DialogTitle>
         <DialogContent>
           <form autoComplete="off" noValidate>
-            <FormControl
-              style={{
-                ...classes.formControl,
-                width: "70%"
-              }}
-            >
-              <TextField
-                id="for"
-                label="For"
-                value={this.state.for}
-                onChange={this.handleFieldChange("for")}
-                autoFocus
-              />
-            </FormControl>
-            <FormControl
-              style={{
-                ...classes.formControl,
-                ...classes.partialWidth,
-                float: "right",
-                width: "25%"
-              }}
-              disabled
-            >
-              <TextField
-                id="qty"
-                label="Number of Spaces"
-                type="number"
-                value="1"
-              />
-            </FormControl>
-            <FormHelperText style={classes.formControl}>
-              Note: Spaces automatically chosen prioritizing spaces near the
-              front of the building and keeping group reservations together.
-            </FormHelperText>
-            <FormControl
-              style={{
-                ...classes.formControl
-              }}
-            >
-              <DateRange
-                calendars={1}
-                theme={calendarStyle}
-                onChange={this.handleSelect}
-                disableDaysBeforeToday
-                startDate={this.state.startDate}
-                endDate={this.state.endDate}
-              />
-            </FormControl>
-            <Container style={{ display: "inline" }}>
-              <FormControl>
-                <TextField
-                  label="Start Time"
-                  type="time"
-                  value={this.state.startTime.format("HH:mm")}
-                  onChange={this.handleTimeChange("startTime")}
-                />
-                <br />
-                <TextField
-                  label="End Time"
-                  type="time"
-                  value={this.state.endTime.format("HH:mm")}
-                  onChange={this.handleTimeChange("endTime")}
-                />
-              </FormControl>
-            </Container>
+            <Grid container>
+              <Grid item xs={12}>
+                <FormControl fullWidth style={classes.formControl}>
+                  <TextField
+                    id="for"
+                    label="For"
+                    value={this.state.for}
+                    onChange={this.handleFieldChange("for")}
+                    autoFocus
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl
+                  style={{
+                    ...classes.formControl
+                  }}
+                >
+                  <FormLabel>Date</FormLabel>
+                  <FormHelperText style={{ marginBottom: "1em" }}>
+                    Select a date or date range on the calendar.
+                  </FormHelperText>
+                  <DateRange
+                    calendars={1}
+                    theme={calendarStyle}
+                    onChange={this.handleSelect}
+                    disableDaysBeforeToday
+                    startDate={this.state.startDate}
+                    endDate={this.state.endDate}
+                  />
+                  <FormLabel style={{ margin: "1em 0" }}>Time</FormLabel>
+                  <TextField
+                    label="Start Time"
+                    type="time"
+                    style={{ paddingRight: "1em" }}
+                    value={this.state.startTime.format("HH:mm")}
+                    onChange={this.handleTimeChange("startTime")}
+                  />
+                  <br />
+                  <TextField
+                    label="End Time"
+                    type="time"
+                    style={{ paddingRight: "1em", marginBottom: "1em" }}
+                    value={this.state.endTime.format("HH:mm")}
+                    onChange={this.handleTimeChange("endTime")}
+                  />
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl style={{ width: "95%", marginLeft: "1.2em" }}>
+                  <FormLabel>Parking Space Selection</FormLabel>
+                  <FormHelperText style={{ marginBottom: "1em" }}>
+                    Select one or more parking spaces below.
+                  </FormHelperText>
+                  <SpaceSelector />
+                </FormControl>
+              </Grid>
+            </Grid>
           </form>
         </DialogContent>
         <DialogActions>

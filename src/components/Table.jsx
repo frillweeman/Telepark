@@ -20,7 +20,8 @@ function getCurrentWeekday(beginning) {
 class Table extends Component {
   state = {
     deletePromptOpen: false,
-    selectedForEdit: null,
+    // selectedForEdit: null,
+    selectedForEdit: "new",
     selected: []
   };
 
