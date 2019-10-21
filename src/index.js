@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 
 import "./styles.css";
 import Table from "./components/Table";
+import Users from "./components/Users";
 import {
   Grid,
   AppBar,
@@ -20,6 +21,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
+import "firebase/functions";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -33,8 +35,11 @@ const firebaseConfig = {
 };
 
 var provider = new firebase.auth.GoogleAuthProvider();
+// provider.setCustomParameters({ hd: "uah.edu" });
 
 firebase.initializeApp(firebaseConfig);
+
+const createUser = firebase.functions().httpsCallable("createUser");
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 var db = firebase.firestore();
@@ -46,7 +51,9 @@ class App extends React.Component {
   state = {
     reservations: [],
     validUser: false,
-    lastDeletedReservation: null
+    admin: false,
+    lastDeletedReservation: null,
+    users: []
   };
 
   constructor(props) {
@@ -60,23 +67,28 @@ class App extends React.Component {
 
       console.log("current user: ", user.uid);
 
-      usersCollectionRef
-        .doc(user.uid)
-        .get()
-        .then(doc => {
-          console.log("is admin: ", doc.data().admin);
-          if (doc.exists && doc.data().admin)
-            this.setState({ validUser: true });
-        })
-        .catch(e => {
-          console.log("user not in users database");
+      usersCollectionRef.onSnapshot(snapshot => {
+        this.setState({ users: snapshot.docs }, () => {
+          let u = this.state.users.find(u => u.id === user.uid);
+          if (u) {
+            this.setState({
+              admin: u.data().isAdmin,
+              validUser: u.data().isActiveEmployee
+            });
+          } else {
+            console.log(
+              "added new user to users database, awaiting approval for write access"
+            );
+            createUser();
+          }
         });
+      });
     });
   }
 
   // set up callback for real time database changes
   componentDidMount() {
-    reservationsCollectionRef.onSnapshot(snapshot => {
+    reservationsCollectionRef.orderBy("from", "asc").onSnapshot(snapshot => {
       this.setState({ reservations: snapshot.docs });
     });
   }
@@ -106,16 +118,36 @@ class App extends React.Component {
   handleUpdateDocument = (id, newDocument) => {
     reservationsCollectionRef
       .doc(id)
-      .set(newDocument)
+      .set({ ...newDocument, createdBy: firebase.auth().currentUser.uid })
       .then(() => console.log("updated document"))
       .catch(e => console.error("error updating: ", e));
   };
 
   handleCreateDocument = newDocument => {
     reservationsCollectionRef
-      .add(newDocument)
+      .add({ ...newDocument, createdBy: firebase.auth().currentUser.uid })
       .then(() => console.log("added document"))
       .catch(e => console.error("error adding document: ", e));
+  };
+
+  handleUpdateUser = (id, newData) => {
+    usersCollectionRef
+      .doc(id)
+      .update(newData)
+      .then(() => {
+        console.log(`updated user ${id} with data: ${newData}`);
+      })
+      .catch(e => {
+        console.error("error updating user: ", e);
+      });
+  };
+
+  handleDeleteUser = id => {
+    usersCollectionRef
+      .doc(id)
+      .delete()
+      .then(() => console.log(`user ${id} deleted`))
+      .catch(e => console.error("error deleting: ", e));
   };
 
   handleUndo = () => {
@@ -129,21 +161,32 @@ class App extends React.Component {
     return (
       <ThemeProvider theme={theme}>
         <div className="App">
-          <AppBar position="static">
+          <AppBar position="fixed">
             <img src="/telepark.svg" style={{ height: 50, padding: 10 }} />
           </AppBar>
-          <Grid container>
+          <Grid container style={{ marginTop: 70 }}>
             {firebase.auth().currentUser ? (
               this.state.validUser ? (
-                <Grid item xs={12} md={8} lg={6}>
-                  <Table
-                    reservations={this.state.reservations}
-                    onDeleteDocument={this.handleDeleteDocument}
-                    onDeleteDocuments={this.handleDeleteDocuments}
-                    onUpdateDocument={this.handleUpdateDocument}
-                    onCreateDocument={this.handleCreateDocument}
-                  />
-                </Grid>
+                <React.Fragment>
+                  <Grid item xs={12} md={8} lg={6}>
+                    <Table
+                      reservations={this.state.reservations}
+                      onDeleteDocument={this.handleDeleteDocument}
+                      onDeleteDocuments={this.handleDeleteDocuments}
+                      onUpdateDocument={this.handleUpdateDocument}
+                      onCreateDocument={this.handleCreateDocument}
+                    />
+                  </Grid>
+                  {this.state.admin && (
+                    <Grid item xs={12} sm={6} md={4}>
+                      <Users
+                        users={this.state.users}
+                        onRoleChange={this.handleUpdateUser}
+                        onDelete={this.handleDeleteUser}
+                      />
+                    </Grid>
+                  )}
+                </React.Fragment>
               ) : (
                 <Paper
                   style={{
@@ -154,46 +197,28 @@ class App extends React.Component {
                   }}
                 >
                   {" "}
-                  {firebase.auth().currentUser.email.includes("uah.edu") ? (
-                    <React.Fragment>
-                      <Typography
-                        variant="h6"
-                        style={{ textAlign: "center", marginBottom: "1em" }}
+                  <React.Fragment>
+                    <Typography
+                      variant="h6"
+                      style={{ textAlign: "center", marginBottom: "1em" }}
+                    >
+                      Account Not Authorized
+                    </Typography>
+                    <Typography variant="body1">
+                      Your account has not been authorized for use with this
+                      application. Please&nbsp;
+                      <Link
+                        href={`mailto:wgf0002@uah.edu?subject=Digital%20Signage%20Access&body=Digital%20Signage%20Access%20Request%0A%0AName%3A%20${encodeURI(
+                          firebase.auth().currentUser.displayName
+                        )}%0AEmail%3A%20${encodeURI(
+                          firebase.auth().currentUser.email
+                        )}`}
                       >
-                        Account Not Verified
-                      </Typography>
-                      <Typography variant="body1">
-                        Your account has not been verified for use with this
-                        application. Please&nbsp;
-                        <Link href="mailto:wgf0002@uah.edu">
-                          contact your manager
-                        </Link>
-                        &nbsp;for access.
-                      </Typography>
-                    </React.Fragment>
-                  ) : (
-                    <React.Fragment>
-                      <Typography
-                        variant="h6"
-                        style={{ textAlign: "center", marginBottom: "1em" }}
-                      >
-                        Wrong Account
-                      </Typography>
-                      <Typography variant="body1">
-                        You are not signed in with a UAH Google account.
-                        Please&nbsp;
-                        <Link
-                          href=""
-                          onClick={() => {
-                            firebase.auth().signOut();
-                          }}
-                        >
-                          log out
-                        </Link>
-                        &nbsp;and try again.
-                      </Typography>
-                    </React.Fragment>
-                  )}
+                        contact your manager
+                      </Link>
+                      &nbsp;for access.
+                    </Typography>
+                  </React.Fragment>
                 </Paper>
               )
             ) : (

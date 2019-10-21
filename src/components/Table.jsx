@@ -20,8 +20,7 @@ function getCurrentWeekday(beginning) {
 class Table extends Component {
   state = {
     deletePromptOpen: false,
-    // selectedForEdit: null,
-    selectedForEdit: "new",
+    selectedForEdit: null,
     selected: []
   };
 
@@ -90,7 +89,13 @@ class Table extends Component {
 
   render() {
     return (
-      <Paper style={{ padding: "1em 0", margin: "1em", textAlign: "center" }}>
+      <Paper
+        style={{
+          padding: "1em 0",
+          margin: "1em",
+          textAlign: "center"
+        }}
+      >
         <Typography
           variant="h5"
           style={{ textAlign: "center", textTransform: "uppercase" }}
@@ -120,16 +125,22 @@ class Table extends Component {
                 - No Reservations -
               </div>
             )}
-            {this.props.reservations.map(doc => (
-              <TableRow
-                key={doc.id}
-                selected={this.state.selected.includes(doc.id)}
-                onDelete={this.props.onDeleteDocument}
-                onRowClick={this.handleClickRow}
-                reservation={{ ...doc.data(), id: doc.id }}
-                onCheckboxChange={this.handleRowCheckbox}
-              />
-            ))}
+            <div
+              style={{
+                width: "100%"
+              }}
+            >
+              {this.props.reservations.map(doc => (
+                <TableRow
+                  key={doc.id}
+                  selected={this.state.selected.includes(doc.id)}
+                  onDelete={this.props.onDeleteDocument}
+                  onRowClick={this.handleClickRow}
+                  reservation={{ ...doc.data(), id: doc.id }}
+                  onCheckboxChange={this.handleRowCheckbox}
+                />
+              ))}
+            </div>
           </Grid>
         </List>
         <Button
@@ -164,7 +175,8 @@ class Table extends Component {
                 ? {
                     for: "",
                     from: getCurrentWeekday(true),
-                    to: getCurrentWeekday(false)
+                    to: getCurrentWeekday(false),
+                    player_id: []
                   }
                 : this.props.reservations
                     .find(res => res.id === this.state.selectedForEdit)

@@ -1,13 +1,25 @@
 import React, { Component } from "react";
 import { Checkbox, FormControlLabel } from "@material-ui/core";
 
+const spacesPerSide = 8;
+
 class SpaceSelector extends Component {
   state = {
-    spacesPerSide: 8
+    spacesSelected: this.props.spacesSelected
+  };
+
+  handleCheckboxChange = space => (e, checked) => {
+    let spacesSelected = this.state.spacesSelected;
+    if (checked) spacesSelected.push(space);
+    else spacesSelected = spacesSelected.filter(el => el !== space);
+
+    this.setState(
+      { spacesSelected: spacesSelected },
+      this.props.onChange.bind(this, spacesSelected)
+    );
   };
 
   render() {
-    const { spacesPerSide } = this.state;
     return (
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <tbody>
@@ -24,7 +36,17 @@ class SpaceSelector extends Component {
                 <FormControlLabel
                   label={`${spacesPerSide - index}L`}
                   labelPlacement="end"
-                  control={<Checkbox color="primary" />}
+                  control={
+                    <Checkbox
+                      checked={this.state.spacesSelected.includes(
+                        `${spacesPerSide - index}L`
+                      )}
+                      onChange={this.handleCheckboxChange(
+                        `${spacesPerSide - index}L`
+                      )}
+                      color="primary"
+                    />
+                  }
                 />
               </td>
               <td
@@ -43,7 +65,17 @@ class SpaceSelector extends Component {
                 <FormControlLabel
                   label={`${spacesPerSide - index}R`}
                   labelPlacement="start"
-                  control={<Checkbox color="primary" />}
+                  control={
+                    <Checkbox
+                      checked={this.state.spacesSelected.includes(
+                        `${spacesPerSide - index}R`
+                      )}
+                      onChange={this.handleCheckboxChange(
+                        `${spacesPerSide - index}R`
+                      )}
+                      color="primary"
+                    />
+                  }
                 />
               </td>
             </tr>

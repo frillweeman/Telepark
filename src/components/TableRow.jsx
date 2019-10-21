@@ -27,6 +27,13 @@ const style = {
 };
 
 class TableRow extends Component {
+  state = {
+    isToday: {
+      from: isToday(this.props.reservation.from.toDate()),
+      to: isToday(this.props.reservation.to.toDate())
+    }
+  };
+
   handleClickRow = e => {
     if (e.target.tagName === "DIV")
       this.props.onRowClick(this.props.reservation.id);
@@ -57,8 +64,16 @@ class TableRow extends Component {
             </IconButton>
           </Grid>
         </Hidden>
-        <Grid item xs={2} style={!this.props.head ? { color: "#0088ff" } : {}}>
-          {this.props.reservation.player_id}
+        <Grid item xs={2} style={{ color: "#0088ff" }}>
+          {this.props.reservation.player_id.length < 2 ? (
+            this.props.reservation.player_id
+          ) : (
+            <i className="material-icons">
+              {this.props.reservation.player_id.length > 9
+                ? "filter_9_plus"
+                : `filter_${this.props.reservation.player_id.length}`}
+            </i>
+          )}
         </Grid>
         <Grid
           item
@@ -74,9 +89,13 @@ class TableRow extends Component {
         <Grid
           item
           xs={3}
-          style={{ color: "#e66b00", whiteSpace: "nowrap", overflow: "hidden" }}
+          style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            color: this.state.isToday.from ? "#000" : "#777"
+          }}
         >
-          {isToday(this.props.reservation.from.toDate())
+          {this.state.isToday.from
             ? this.props.reservation.from.toDate().toLocaleTimeString([], {
                 hour: "numeric",
                 minute: "2-digit"
@@ -86,13 +105,13 @@ class TableRow extends Component {
         <Grid
           item
           xs={3}
-          style={
-            !this.props.head
-              ? { color: "#e66b00", whiteSpace: "nowrap", overflow: "hidden" }
-              : {}
-          }
+          style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            color: this.state.isToday.from ? "#000" : "#777"
+          }}
         >
-          {isToday(this.props.reservation.to.toDate())
+          {this.state.isToday.to
             ? this.props.reservation.to.toDate().toLocaleTimeString([], {
                 hour: "numeric",
                 minute: "2-digit"
