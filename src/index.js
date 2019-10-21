@@ -35,7 +35,7 @@ const firebaseConfig = {
 };
 
 var provider = new firebase.auth.GoogleAuthProvider();
-// provider.setCustomParameters({ hd: "uah.edu" });
+provider.setCustomParameters({ hd: "uah.edu" });
 
 firebase.initializeApp(firebaseConfig);
 
