@@ -5,6 +5,8 @@
  * - change space (player_id) to array, represent change
  */
 
+/*eslint no-extend-native: ["error", { "exceptions": ["Date"] }]*/
+
 import React, { Component } from "react";
 import {
   Dialog,

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import {
-  Paper,
   Typography,
   Table,
   TableHead,
@@ -11,6 +10,9 @@ import {
   MenuItem,
   IconButton
 } from "@material-ui/core";
+import Widget from "./Widget";
+
+// add proptypes and defaults
 
 class Users extends Component {
   state = {};
@@ -33,6 +35,8 @@ class Users extends Component {
         updatedObj.isActiveEmployee = false;
         updatedObj.isAdmin = false;
         break;
+      default:
+        break;
     }
 
     this.props.onRoleChange(id, updatedObj);
@@ -40,13 +44,7 @@ class Users extends Component {
 
   render() {
     return (
-      <Paper
-        style={{
-          padding: "1em 0",
-          margin: "1em",
-          textAlign: "center"
-        }}
-      >
+      <Widget>
         <Typography
           variant="h5"
           style={{ textAlign: "center", textTransform: "uppercase" }}
@@ -98,7 +96,7 @@ class Users extends Component {
             ))}
           </TableBody>
         </Table>
-      </Paper>
+      </Widget>
     );
   }
 }

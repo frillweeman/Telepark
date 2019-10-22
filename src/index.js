@@ -6,7 +6,6 @@ import Table from "./components/Table";
 import Users from "./components/Users";
 import {
   Grid,
-  AppBar,
   Typography,
   CircularProgress,
   Paper,
@@ -22,6 +21,7 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
+import AppBar from "./components/AppBar";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -35,12 +35,12 @@ const firebaseConfig = {
 };
 
 var provider = new firebase.auth.GoogleAuthProvider();
-provider.setCustomParameters({ hd: "uah.edu" });
+provider.setCustomParameters({ hd: "uah.edu", prompt: "select_account" });
 
 firebase.initializeApp(firebaseConfig);
 
 const createUser = firebase.functions().httpsCallable("createUser");
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
 
 var db = firebase.firestore();
 const usersCollectionRef = db.collection("users");
@@ -157,17 +157,22 @@ class App extends React.Component {
     this.setState({ lastDeletedReservation: null });
   };
 
+  handleSignOut = () => {
+    firebase.auth().signOut();
+  };
+
   render() {
     return (
       <ThemeProvider theme={theme}>
         <div className="App">
-          <AppBar position="fixed">
-            <img src="/telepark.svg" style={{ height: 50, padding: 10 }} />
-          </AppBar>
-          <Grid container style={{ marginTop: 70 }}>
+          <AppBar
+            user={firebase.auth().currentUser}
+            onSignOut={this.handleSignOut}
+          />
+          <Grid container style={{ marginTop: 70, padding: theme.spacing(1) }}>
             {firebase.auth().currentUser ? (
               this.state.validUser ? (
-                <React.Fragment>
+                <>
                   <Grid item xs={12} md={8} lg={6}>
                     <Table
                       reservations={this.state.reservations}
@@ -186,7 +191,7 @@ class App extends React.Component {
                       />
                     </Grid>
                   )}
-                </React.Fragment>
+                </>
               ) : (
                 <Paper
                   style={{
@@ -197,7 +202,7 @@ class App extends React.Component {
                   }}
                 >
                   {" "}
-                  <React.Fragment>
+                  <>
                     <Typography
                       variant="h6"
                       style={{ textAlign: "center", marginBottom: "1em" }}
@@ -218,7 +223,7 @@ class App extends React.Component {
                       </Link>
                       &nbsp;for access.
                     </Typography>
-                  </React.Fragment>
+                  </>
                 </Paper>
               )
             ) : (

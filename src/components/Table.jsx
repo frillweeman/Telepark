@@ -3,7 +3,8 @@ import TableRow from "./TableRow";
 import TableHead from "./TableHead";
 import DeleteDialog from "./DeleteDialog";
 import EditDialog from "./EditDialog";
-import { Grid, List, Paper, Typography, Button } from "@material-ui/core";
+import Widget from "./Widget";
+import { Grid, List, Typography, Button } from "@material-ui/core";
 
 function getCurrentWeekday(beginning) {
   const d = new Date();
@@ -89,13 +90,7 @@ class Table extends Component {
 
   render() {
     return (
-      <Paper
-        style={{
-          padding: "1em 0",
-          margin: "1em",
-          textAlign: "center"
-        }}
-      >
+      <Widget>
         <Typography
           variant="h5"
           style={{ textAlign: "center", textTransform: "uppercase" }}
@@ -191,7 +186,7 @@ class Table extends Component {
             }
           />
         )}
-      </Paper>
+      </Widget>
     );
   }
 }
