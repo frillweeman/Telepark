@@ -207,21 +207,11 @@ class App extends React.Component {
                       variant="h6"
                       style={{ textAlign: "center", marginBottom: "1em" }}
                     >
-                      Account Not Authorized
+                      You're in the Queue
                     </Typography>
                     <Typography variant="body1">
-                      Your account has not been authorized for use with this
-                      application. Please&nbsp;
-                      <Link
-                        href={`mailto:wgf0002@uah.edu?subject=Digital%20Signage%20Access&body=Digital%20Signage%20Access%20Request%0A%0AName%3A%20${encodeURI(
-                          firebase.auth().currentUser.displayName
-                        )}%0AEmail%3A%20${encodeURI(
-                          firebase.auth().currentUser.email
-                        )}`}
-                      >
-                        contact your manager
-                      </Link>
-                      &nbsp;for access.
+                      Your account hasn't been authorized yet. Hang tight while
+                      your manager reviews your account for approval.
                     </Typography>
                   </>
                 </Paper>
