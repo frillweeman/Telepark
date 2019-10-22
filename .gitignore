@@ -3,16 +3,4 @@ node_modules/
 .DS_Store
 .firebase/
 .vscode/
-build/telepark.svg
-build/static/css/main.e75b15df.chunk.css
-build/static/css/main.e75b15df.chunk.css.map
-build/static/js/2.9f7fa65d.chunk.js
-build/static/js/2.9f7fa65d.chunk.js.map
-build/static/js/main.43f96c0c.chunk.js
-build/static/js/main.43f96c0c.chunk.js.map
-build/static/js/runtime~main.a8a9905a.js
-build/static/js/runtime~main.a8a9905a.js.map
-build/asset-manifest.json
-build/index.html
-build/precache-manifest.4972b561fccc61f0679a28a05b8a0d2e.js
-build/service-worker.js
+build/
