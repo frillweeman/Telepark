@@ -4,10 +4,10 @@ import React, { Component } from "react";
 import "./App.css";
 
 import firebase from "firebase/app";
-import "firebase/auth";
 import "firebase/firestore";
 const schedule = require("node-schedule");
 const qs = require("query-string");
+const moment = require("moment");
 
 const firebaseConfig = {
   apiKey: "AIzaSyDZyV2s2Uf0QZPQQAJE-OIdsxzFOrWsX8w",
@@ -24,7 +24,7 @@ firebase.initializeApp(firebaseConfig);
 var db = firebase.firestore();
 let reservationsCollectionRef = db.collection("reservations");
 
-const inPast = date => date < new Date();
+const inPast = date => date < moment();
 
 class App extends Component {
   state = {
@@ -40,19 +40,26 @@ class App extends Component {
   removeCollisions = date => {
     // find reservations where end time (.to) is same as start time (date)
     if (!this.state.reservations) return;
-    const result = this.state.reservations.find(
-      doc =>
-        doc
-          .data()
-          .to.toDate()
-          .getTime() === date.getTime()
+
+    const collision = this.state.reservations.find(doc =>
+      moment(doc.data().to.toDate()).isSame(date, "minute")
     );
-    if (result) {
-      result.cancel();
+
+    console.log("collision", collision);
+
+    if (collision) {
+      // cancel end event
+      this.state.schedule.end
+        .find(event => event.name === collision.id)
+        .cancel();
+
+      // remove end event from array
       this.setState({
         schedule: {
-          start: [...this.state.schedule.start],
-          end: this.state.schedule.end.filter(event => event.name !== result.id)
+          start: this.state.schedule.start,
+          end: this.state.schedule.end.filter(
+            event => event.name !== collision.id
+          )
         }
       });
     }
@@ -60,47 +67,54 @@ class App extends Component {
 
   isStartEventAtTime = date => {
     if (!this.state.reservations) return false;
-    return !!this.state.reservations.find(
-      doc =>
-        doc
-          .data()
-          .from.toDate()
-          .getTime() === date.getTime()
+    return !!this.state.reservations.find(doc =>
+      moment(doc.data().from.toDate()).isSame(date, "minute")
     );
   };
 
   addReservation = doc => {
-    const reservation = doc.data();
-    if (inPast(reservation.to.toDate())) {
+    let reservation = doc.data();
+    reservation.from = moment(reservation.from.toDate());
+    reservation.to = moment(reservation.to.toDate());
+
+    if (inPast(reservation.to)) {
       console.log("Reservation overdue (not scheduled): ", reservation);
       return;
     }
 
+    let scheduleObj = {
+      start: this.state.schedule.start,
+      end: this.state.schedule.end
+    };
+
     // schedule reservation
-    if (inPast(reservation.from.toDate())) {
+    if (inPast(reservation.from)) {
       // update immediately
       this.setContent(doc.id);
     } else {
       // cancel existing end events that would occur during this start event
-      this.removeCollisions(reservation.from.toDate());
+      this.removeCollisions(reservation.from);
 
       // create start event
-      this.state.schedule.start.push(
-        schedule.scheduleJob(doc.id, reservation.from.toDate(), () => () =>
+      scheduleObj.start.push(
+        schedule.scheduleJob(doc.id, reservation.from.toDate(), () =>
           this.setContent(doc.id)
         )
       );
     }
 
     // if there's start event at end time, DO NOT create end event
-    if (!this.isStartEventAtTime(reservation.to.toDate())) {
+    if (!this.isStartEventAtTime(reservation.to)) {
       // create end event
-      this.state.schedule.end.push(
+      scheduleObj.end.push(
         schedule.scheduleJob(doc.id, reservation.to.toDate(), () =>
           this.setContent(null)
         )
       );
     }
+
+    // make all changes to state at once
+    this.setState({ schedule: scheduleObj });
   };
 
   modifyReservation = change => {
@@ -108,10 +122,6 @@ class App extends Component {
     this.cancelEventById(change.doc.id);
     this.addReservation(change.doc);
   };
-
-  componentDidUpdate() {
-    console.log("active reservation: ", this.state.activeReservation);
-  }
 
   cancelEventById = id => {
     // if is ongoing, end now
@@ -177,7 +187,7 @@ class App extends Component {
         .id.toUpperCase();
       console.log("player-id: ", player_id);
       reservationsCollectionRef
-        .where("player_id", "==", player_id)
+        .where("player_id", "array-contains", player_id)
         .onSnapshot(snapshot => {
           this.setState(
             {
@@ -204,25 +214,33 @@ class App extends Component {
         className="App"
         style={{ position: "relative", height: "100vh", margin: 0 }}
       >
-        <h1
+        <div
           style={{
-            fontSize: "10vh",
-            fontFamily: '"Avenir", sans-serif',
-            fontWeight: 500,
             position: "absolute",
             top: "8vh",
-            lineHeight: 1.4,
-            color: "#0088ce"
+            textAlign: "center",
+            width: "100%"
           }}
         >
-          {activeReservation
-            ? `Welcome ${
-                this.state.reservations
-                  .find(doc => doc.id === activeReservation)
-                  .data().for
-              }`
-            : this.state.error || "Reserved Visitor Parking"}
-        </h1>
+          <h1
+            style={{
+              fontSize: "10vh",
+              fontFamily: '"Avenir", sans-serif',
+              fontWeight: 500,
+              lineHeight: 1.4,
+              color: "#0088ce",
+              padding: "0 2rem"
+            }}
+          >
+            {activeReservation
+              ? `Welcome ${
+                  this.state.reservations
+                    .find(doc => doc.id === activeReservation)
+                    .data().for
+                }`
+              : this.state.error || "Reserved Visitor Parking"}
+          </h1>
+        </div>
         <img
           style={{
             width: "80%",
