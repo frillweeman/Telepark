@@ -238,23 +238,45 @@ class EditDialog extends Component {
     if (!validData) return;
     // end check
 
+    const fullStartDate = this.state.startDate.set({
+      hour: this.state.startTime.hour(),
+      minute: this.state.startTime.minute(),
+      second: 0
+    });
+
+    const fullEndDate = this.state.endDate.set({
+      hour: this.state.endTime.hour(),
+      minute: this.state.endTime.minute(),
+      second: 0
+    });
+
+    const conflictingRes = this.props.getConflictingReservation(
+      fullStartDate,
+      fullEndDate,
+      this.state.spacesSelected
+    );
+
+    if (conflictingRes) {
+      const res = conflictingRes.data();
+      alert(
+        `Conflict with Existing Reservation\n\nFor: ${
+          res.for
+        }\nWhen: ${res.from
+          .toDate()
+          .toLocaleString()} - ${res.to
+          .toDate()
+          .toLocaleString()}\nSpaces: ${res.player_id.map(
+          id => `${id} `
+        )}\n\nPlease choose other spaces or times.`
+      );
+      return;
+    }
+
     const newReservation = {
       for: this.state.for,
       player_id: this.state.spacesSelected,
-      from: this.state.startDate
-        .set({
-          hour: this.state.startTime.hour(),
-          minute: this.state.startTime.minute(),
-          second: 0
-        })
-        .toDate(),
-      to: this.state.endDate
-        .set({
-          hour: this.state.endTime.hour(),
-          minute: this.state.endTime.minute(),
-          second: 0
-        })
-        .toDate()
+      from: fullStartDate.toDate(),
+      to: fullEndDate.toDate()
     };
 
     if (this.state.id === "new") this.props.onCreateDocument(newReservation);

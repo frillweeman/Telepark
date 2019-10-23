@@ -5,6 +5,7 @@ import DeleteDialog from "./DeleteDialog";
 import EditDialog from "./EditDialog";
 import Widget from "./Widget";
 import { Grid, List, Typography, Button } from "@material-ui/core";
+const moment = require("moment");
 
 function getCurrentWeekday(beginning) {
   const d = new Date();
@@ -23,6 +24,27 @@ class Table extends Component {
     deletePromptOpen: false,
     selectedForEdit: null,
     selected: []
+  };
+
+  getConflictingReservation = (startTime, endTime, player_ids) => {
+    let res4PID = this.props.reservations.filter(res =>
+      res.data().player_id.some(p => player_ids.indexOf(p) >= 0)
+    );
+
+    if (!res4PID.length) return null;
+
+    return res4PID.find(el => {
+      let { from, to } = el.data();
+
+      from = moment(from.toDate());
+      to = moment(to.toDate());
+
+      return (
+        startTime.isBetween(from, to, "minute", "()") ||
+        endTime.isBetween(from, to, "minute", "()") ||
+        from.isBetween(startTime, endTime, "minute", "()")
+      );
+    });
   };
 
   // ToDo: if reservation deleted, remove its document id from selected[]
@@ -165,6 +187,7 @@ class Table extends Component {
             onClose={this.handleCancelEdit}
             onUpdateDocument={this.props.onUpdateDocument}
             onCreateDocument={this.props.onCreateDocument}
+            getConflictingReservation={this.getConflictingReservation}
             reservation={
               this.state.selectedForEdit === "new"
                 ? {

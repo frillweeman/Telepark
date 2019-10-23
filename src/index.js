@@ -9,10 +9,11 @@ import {
   Typography,
   CircularProgress,
   Paper,
-  Link,
   Snackbar,
+  SnackbarContent,
   Button,
-  IconButton
+  IconButton,
+  Icon
 } from "@material-ui/core";
 import theme from "./theme";
 import { ThemeProvider } from "@material-ui/styles";
@@ -53,6 +54,7 @@ class App extends React.Component {
     validUser: false,
     admin: false,
     lastDeletedReservation: null,
+    recentlyUpdated: null,
     users: []
   };
 
@@ -100,7 +102,7 @@ class App extends React.Component {
   handleDeleteDocument = id => {
     // save in state as last deleted doc, show undo snackbar
     const resToDelete = this.state.reservations.find(res => res.id === id);
-    this.setState({ lastDeletedReservation: resToDelete });
+    this.displayDeleteSnackbar(resToDelete);
     reservationsCollectionRef
       .doc(id)
       .delete()
@@ -123,14 +125,14 @@ class App extends React.Component {
     reservationsCollectionRef
       .doc(id)
       .set({ ...newDocument, createdBy: firebase.auth().currentUser.uid })
-      .then(() => console.log("updated document"))
+      .then(this.displayUpdateSnackbar.bind(null, "Updated"))
       .catch(e => console.error("error updating: ", e));
   };
 
   handleCreateDocument = newDocument => {
     reservationsCollectionRef
       .add({ ...newDocument, createdBy: firebase.auth().currentUser.uid })
-      .then(() => console.log("added document"))
+      .then(this.displayUpdateSnackbar.bind(null, "Created"))
       .catch(e => console.error("error adding document: ", e));
   };
 
@@ -163,6 +165,20 @@ class App extends React.Component {
 
   handleSignOut = () => {
     firebase.auth().signOut();
+  };
+
+  displayUpdateSnackbar = disp => {
+    this.setState({
+      lastDeletedReservation: disp ? null : this.state.lastDeletedReservation,
+      recentlyUpdated: disp
+    });
+  };
+
+  displayDeleteSnackbar = disp => {
+    this.setState({
+      lastDeletedReservation: disp,
+      recentlyUpdated: disp ? null : this.state.recentlyUpdated
+    });
   };
 
   render() {
@@ -231,18 +247,14 @@ class App extends React.Component {
             }}
             open={this.state.lastDeletedReservation}
             autoHideDuration={6000}
-            onClose={() => {
-              this.setState({ lastDeletedReservation: null });
-            }}
+            onClose={this.displayDeleteSnackbar.bind(null, false)}
             message="Reservation Deleted"
             action={[
               <Button color="secondary" size="small" onClick={this.handleUndo}>
                 UNDO
               </Button>,
               <IconButton
-                onClick={() => {
-                  this.setState({ lastDeletedReservation: null });
-                }}
+                onClick={this.displayDeleteSnackbar.bind(null, false)}
               >
                 <i className="material-icons" style={{ color: "white" }}>
                   close
@@ -250,6 +262,42 @@ class App extends React.Component {
               </IconButton>
             ]}
           />
+          <Snackbar
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left"
+            }}
+            open={this.state.recentlyUpdated}
+            autoHideDuration={6000}
+            onClose={this.displayUpdateSnackbar.bind(null, false)}
+          >
+            <SnackbarContent
+              message={
+                <span style={{ display: "flex", alignItems: "center" }}>
+                  <Icon
+                    style={{
+                      marginRight: theme.spacing(1)
+                    }}
+                  >
+                    <i className="material-icons">check_circle_icon</i>
+                  </Icon>
+                  {`Reservation ${this.state.recentlyUpdated || ""}`}
+                </span>
+              }
+              style={{
+                backgroundColor: "green"
+              }}
+              action={[
+                <IconButton
+                  onClick={this.displayUpdateSnackbar.bind(null, false)}
+                >
+                  <i className="material-icons" style={{ color: "white" }}>
+                    close
+                  </i>
+                </IconButton>
+              ]}
+            ></SnackbarContent>
+          </Snackbar>
         </div>
       </ThemeProvider>
     );
