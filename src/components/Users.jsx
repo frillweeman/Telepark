@@ -73,6 +73,9 @@ class Users extends Component {
                 <TableCell>{user.data().name}</TableCell>
                 <TableCell>
                   <Select
+                    style={{
+                      fontSize: "0.85rem"
+                    }}
                     value={
                       user.data().isAdmin
                         ? "admin"
@@ -87,7 +90,7 @@ class Users extends Component {
                     <MenuItem value="disabled">Disabled</MenuItem>
                   </Select>
                 </TableCell>
-                <TableCell>
+                <TableCell style={{ padding: "0.2rem" }}>
                   <IconButton onClick={this.props.onDelete.bind(null, user.id)}>
                     <i className="material-icons">delete</i>
                   </IconButton>
