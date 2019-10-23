@@ -51,7 +51,7 @@ class Users extends Component {
         >
           Manage Users
         </Typography>
-        <Table>
+        <Table style={{ width: "100%" }}>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>

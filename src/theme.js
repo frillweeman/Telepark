@@ -4,9 +4,7 @@ import { blue, red, orange } from "@material-ui/core/colors";
 const theme = createMuiTheme({
   spacing: 8,
   palette: {
-    primary: blue,
-    secondary: orange,
-    error: red
+    primary: blue
   },
   typography: {
     fontFamily: ["Roboto", "sans-serif"].join(",")

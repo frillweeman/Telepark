@@ -6,7 +6,8 @@ const styles = theme => ({
   root: {
     padding: theme.spacing(2, 0),
     margin: theme.spacing(1),
-    textAlign: "center"
+    textAlign: "center",
+    overflow: "hidden"
   }
 });
 

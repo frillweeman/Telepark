@@ -108,7 +108,7 @@ class TableRow extends Component {
           style={{
             whiteSpace: "nowrap",
             overflow: "hidden",
-            color: this.state.isToday.from ? "#000" : "#777"
+            color: this.state.isToday.to ? "#000" : "#777"
           }}
         >
           {this.state.isToday.to

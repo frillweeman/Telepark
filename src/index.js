@@ -40,7 +40,7 @@ provider.setCustomParameters({ hd: "uah.edu", prompt: "select_account" });
 firebase.initializeApp(firebaseConfig);
 
 const createUser = firebase.functions().httpsCallable("createUser");
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 var db = firebase.firestore();
 const usersCollectionRef = db.collection("users");
@@ -76,10 +76,11 @@ class App extends React.Component {
               validUser: u.data().isActiveEmployee
             });
           } else {
-            console.log(
-              "added new user to users database, awaiting approval for write access"
-            );
-            createUser();
+            if (createUser())
+              console.log(
+                "added new user to users database, awaiting approval for write access"
+              );
+            else console.error("failed to add user to db");
           }
         });
       });
@@ -89,7 +90,10 @@ class App extends React.Component {
   // set up callback for real time database changes
   componentDidMount() {
     reservationsCollectionRef.orderBy("from", "asc").onSnapshot(snapshot => {
-      this.setState({ reservations: snapshot.docs });
+      let sortedArray = snapshot.docs.sort(
+        (a, b) => a.data().to.toDate().getTime - b.data().to.toDate().getTime
+      );
+      this.setState({ reservations: sortedArray });
     });
   }
 
