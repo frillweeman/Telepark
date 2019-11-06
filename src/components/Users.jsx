@@ -8,7 +8,8 @@ import {
   TableBody,
   Select,
   MenuItem,
-  IconButton
+  IconButton,
+  Tooltip
 } from "@material-ui/core";
 import Widget from "./Widget";
 
@@ -44,13 +45,7 @@ class Users extends Component {
 
   render() {
     return (
-      <Widget>
-        <Typography
-          variant="h5"
-          style={{ textAlign: "center", textTransform: "uppercase" }}
-        >
-          Manage Users
-        </Typography>
+      <Widget title="Manage Users">
         <Table style={{ width: "100%" }}>
           <TableHead>
             <TableRow>
@@ -72,28 +67,34 @@ class Users extends Component {
               >
                 <TableCell>{user.data().name}</TableCell>
                 <TableCell>
-                  <Select
-                    style={{
-                      fontSize: "0.85rem"
-                    }}
-                    value={
-                      user.data().isAdmin
-                        ? "admin"
-                        : user.data().isActiveEmployee
-                        ? "employee"
-                        : "disabled"
-                    }
-                    onChange={this.handleRoleChange(user.id)}
-                  >
-                    <MenuItem value="employee">Employee</MenuItem>
-                    <MenuItem value="admin">Admin</MenuItem>
-                    <MenuItem value="disabled">Disabled</MenuItem>
-                  </Select>
+                  <Tooltip title="Change Role" placement="left">
+                    <Select
+                      style={{
+                        fontSize: "0.85rem"
+                      }}
+                      value={
+                        user.data().isAdmin
+                          ? "admin"
+                          : user.data().isActiveEmployee
+                          ? "employee"
+                          : "disabled"
+                      }
+                      onChange={this.handleRoleChange(user.id)}
+                    >
+                      <MenuItem value="employee">Employee</MenuItem>
+                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="disabled">Disabled</MenuItem>
+                    </Select>
+                  </Tooltip>
                 </TableCell>
                 <TableCell style={{ padding: "0.2rem" }}>
-                  <IconButton onClick={this.props.onDelete.bind(null, user.id)}>
-                    <i className="material-icons">delete</i>
-                  </IconButton>
+                  <Tooltip title="Delete User" placement="top">
+                    <IconButton
+                      onClick={this.props.onDelete.bind(null, user.id)}
+                    >
+                      <i className="material-icons">delete</i>
+                    </IconButton>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

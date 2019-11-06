@@ -23,6 +23,7 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/functions";
 import AppBar from "./components/AppBar";
+import SignagePlayers from "./components/SignagePlayers";
 
 // Firebase Configuration
 const firebaseConfig = {
@@ -41,6 +42,7 @@ provider.setCustomParameters({ hd: "uah.edu", prompt: "select_account" });
 firebase.initializeApp(firebaseConfig);
 
 const createUser = firebase.functions().httpsCallable("createUser");
+const restartDevices = firebase.functions().httpsCallable("restartDevices");
 firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 var db = firebase.firestore();
@@ -193,7 +195,7 @@ class App extends React.Component {
             {firebase.auth().currentUser ? (
               this.state.validUser ? (
                 <>
-                  <Grid item xs={12} md={8} lg={6}>
+                  <Grid item xs={12} lg={6}>
                     <Table
                       reservations={this.state.reservations}
                       onDeleteDocument={this.handleDeleteDocument}
@@ -203,13 +205,21 @@ class App extends React.Component {
                     />
                   </Grid>
                   {this.state.admin && (
-                    <Grid item xs={12} sm={6} md={4}>
-                      <Users
-                        users={this.state.users}
-                        onRoleChange={this.handleUpdateUser}
-                        onDelete={this.handleDeleteUser}
-                      />
-                    </Grid>
+                    <>
+                      <Grid item xs={12} sm={6} lg={3}>
+                        <Users
+                          users={this.state.users}
+                          onRoleChange={this.handleUpdateUser}
+                          onDelete={this.handleDeleteUser}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} lg={3}>
+                        <SignagePlayers
+                          onRestart={restartDevices}
+                          theme={theme}
+                        />
+                      </Grid>
+                    </>
                   )}
                 </>
               ) : (

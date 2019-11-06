@@ -112,13 +112,7 @@ class Table extends Component {
 
   render() {
     return (
-      <Widget>
-        <Typography
-          variant="h5"
-          style={{ textAlign: "center", textTransform: "uppercase" }}
-        >
-          Reservations
-        </Typography>
+      <Widget title="Reservations">
         <List>
           <Grid container>
             <TableHead

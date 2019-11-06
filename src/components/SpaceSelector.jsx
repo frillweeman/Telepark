@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Checkbox, FormControlLabel } from "@material-ui/core";
+import { Checkbox, FormControlLabel, Tooltip } from "@material-ui/core";
 
 const spacesPerSide = 8;
 
@@ -10,8 +10,31 @@ class SpaceSelector extends Component {
 
   handleCheckboxChange = space => (e, checked) => {
     let spacesSelected = this.state.spacesSelected;
-    if (checked) spacesSelected.push(space);
-    else spacesSelected = spacesSelected.filter(el => el !== space);
+    if (checked) {
+      if (space === "all")
+        spacesSelected = [
+          "1R",
+          "2R",
+          "3R",
+          "4R",
+          "5R",
+          "6R",
+          "7R",
+          "8R",
+          "1L",
+          "2L",
+          "3L",
+          "4L",
+          "5L",
+          "6L",
+          "7L",
+          "8L"
+        ];
+      else spacesSelected.push(space);
+    } else {
+      if (space == "all") spacesSelected = [];
+      else spacesSelected = spacesSelected.filter(el => el !== space);
+    }
 
     this.setState(
       { spacesSelected: spacesSelected },
@@ -21,7 +44,12 @@ class SpaceSelector extends Component {
 
   render() {
     return (
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table
+        style={{
+          width: "100%",
+          borderCollapse: "collapse"
+        }}
+      >
         <tbody>
           {[...Array(spacesPerSide)].map((f, index) => (
             <tr>
@@ -51,9 +79,29 @@ class SpaceSelector extends Component {
               </td>
               <td
                 style={{
-                  width: "30%"
+                  width: "30%",
+                  textAlign: "center"
                 }}
-              ></td>
+              >
+                {!index && (
+                  <Tooltip
+                    placement="bottom"
+                    title={
+                      this.state.spacesSelected.length == spacesPerSide * 2
+                        ? "Deselect All"
+                        : "Select All"
+                    }
+                  >
+                    <Checkbox
+                      checked={
+                        this.state.spacesSelected.length == spacesPerSide * 2
+                      }
+                      onChange={this.handleCheckboxChange("all")}
+                      color="secondary"
+                    />
+                  </Tooltip>
+                )}
+              </td>
               <td
                 style={{
                   width: "35%",
@@ -83,7 +131,7 @@ class SpaceSelector extends Component {
           <tr style={{ paddingTop: "2em" }}>
             <td style={{ width: "5%" }} />
             <td style={{ width: "90%", textAlign: "center" }}>SSB Entrance</td>
-            <td style={{ width: "55%" }} />
+            <td style={{ width: "5%" }} />
           </tr>
         </tbody>
       </table>
