@@ -19,15 +19,66 @@ const firebaseConfig = {
   appId: "1:183825692647:web:6af323bc5f709215baaf42"
 };
 
+const logos = {
+  light:
+    "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo.svg?alt=media&token=653c9caa-7f42-459b-8729-28792f292301",
+  dark:
+    "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo-darkmode.svg?alt=media&token=e20f54b4-71ef-4150-8cf2-b386e5a3c669"
+};
+
+const styles = {
+  light: {
+    div: {
+      position: "relative",
+      height: "100vh",
+      margin: 0,
+      background: "#fff"
+    },
+    h1: {
+      fontSize: "10vh",
+      fontFamily: '"Avenir", sans-serif',
+      fontWeight: 500,
+      lineHeight: 1.4,
+      color: "#0088ce",
+      padding: "0 2rem"
+    }
+  },
+  dark: {
+    div: {
+      position: "relative",
+      height: "100vh",
+      margin: 0,
+      background: "#2b2b2b"
+    },
+    h1: {
+      fontSize: "10vh",
+      fontFamily: '"Avenir", sans-serif',
+      fontWeight: 500,
+      lineHeight: 1.4,
+      color: "#fff",
+      padding: "0 2rem"
+    },
+    img: {
+      width: "80%",
+      position: "absolute",
+      left: "10%",
+      bottom: "8vh",
+      fill: "#fff"
+    }
+  }
+};
+
 firebase.initializeApp(firebaseConfig);
 
 var db = firebase.firestore();
 let reservationsCollectionRef = db.collection("reservations");
+let globalConfigRef = db.collection("players").doc("global");
 
 const inPast = date => date < moment();
 
 class App extends Component {
   state = {
+    theme: "light",
     reservations: [],
     activeReservation: null,
     schedule: {
@@ -186,6 +237,16 @@ class App extends Component {
         .parse(this.props.location.search, { ignoreQueryPrefix: true })
         .id.toUpperCase();
       console.log("player-id: ", player_id);
+
+      // config options listener
+      globalConfigRef.onSnapshot(doc => {
+        this.setState({
+          theme: doc.data().darkTheme ? "dark" : "light"
+        });
+        console.log(`dark: ${doc.data().darkTheme}`);
+      });
+
+      // reservations listener
       reservationsCollectionRef
         .where("player_id", "array-contains", player_id)
         .onSnapshot(snapshot => {
@@ -210,28 +271,17 @@ class App extends Component {
     const { activeReservation } = this.state;
 
     return (
-      <div
-        className="App"
-        style={{ position: "relative", height: "100vh", margin: 0 }}
-      >
+      <div className="App" style={styles[this.state.theme].div}>
         <div
           style={{
             position: "absolute",
             top: "8vh",
             textAlign: "center",
-            width: "100%"
+            width: "90%",
+            left: "5%"
           }}
         >
-          <h1
-            style={{
-              fontSize: "10vh",
-              fontFamily: '"Avenir", sans-serif',
-              fontWeight: 500,
-              lineHeight: 1.4,
-              color: "#0088ce",
-              padding: "0 2rem"
-            }}
-          >
+          <h1 style={styles[this.state.theme].h1}>
             {activeReservation
               ? `Welcome ${
                   this.state.reservations
@@ -242,13 +292,9 @@ class App extends Component {
           </h1>
         </div>
         <img
-          style={{
-            width: "80%",
-            position: "absolute",
-            left: "10%",
-            bottom: "8vh"
-          }}
-          src="https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo.svg?alt=media&token=653c9caa-7f42-459b-8729-28792f292301"
+          style={styles.dark.img}
+          src={logos[this.state.theme]}
+          alt="UAH Logo"
         ></img>
       </div>
     );
