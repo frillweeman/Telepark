@@ -48,6 +48,7 @@ firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 var db = firebase.firestore();
 const usersCollectionRef = db.collection("users");
 const reservationsCollectionRef = db.collection("reservations");
+const globalConfigRef = db.collection("players").doc("global");
 // End Firebase Configuration
 
 class App extends React.Component {
@@ -57,7 +58,8 @@ class App extends React.Component {
     admin: false,
     lastDeletedReservation: null,
     recentlyUpdated: null,
-    users: []
+    users: [],
+    darkTheme: false
   };
 
   constructor(props) {
@@ -98,6 +100,9 @@ class App extends React.Component {
         (a, b) => a.data().to.toDate().getTime - b.data().to.toDate().getTime
       );
       this.setState({ reservations: sortedArray });
+    });
+    globalConfigRef.onSnapshot(doc => {
+      this.setState({ darkTheme: doc.data().darkTheme });
     });
   }
 
@@ -158,6 +163,12 @@ class App extends React.Component {
       .catch(e => console.error("error deleting: ", e));
   };
 
+  handleDarkModeChange = e => {
+    globalConfigRef.update({
+      darkTheme: e.target.checked
+    });
+  };
+
   handleUndo = () => {
     this.handleCreateDocument(this.state.lastDeletedReservation.data());
 
@@ -215,6 +226,8 @@ class App extends React.Component {
                       </Grid>
                       <Grid item xs={12} sm={6} lg={3}>
                         <SignagePlayers
+                          darkTheme={this.state.darkTheme}
+                          onThemeChange={this.handleDarkModeChange}
                           onRestart={restartDevices}
                           theme={theme}
                         />

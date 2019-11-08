@@ -61,7 +61,13 @@ class SignagePlayers extends Component {
               <FormLabel>Appearance</FormLabel>
               <FormControlLabel
                 label="Dark Theme"
-                control={<Switch color="primary" />}
+                control={
+                  <Switch
+                    checked={this.props.darkTheme}
+                    onChange={this.props.onThemeChange}
+                    color="primary"
+                  />
+                }
               />
             </FormGroup>
             <Divider />
