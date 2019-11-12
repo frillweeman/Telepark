@@ -57,6 +57,7 @@ class Users extends Component {
           <TableBody>
             {this.props.users.map(user => (
               <TableRow
+                key={user.id}
                 style={
                   !user.data().isActiveEmployee
                     ? {

@@ -45,9 +45,6 @@ class SignagePlayers extends Component {
       <>
         <Widget title="Manage Signs">
           <Container>
-            {/* <FormHelperText>
-            Change the appearance of the signage players in the parking lot.
-          </FormHelperText> */}
             <Chip
               icon={<CheckCircleIcon />}
               label="All signs are connected"
