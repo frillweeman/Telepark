@@ -5,6 +5,7 @@ import "./App.css";
 
 import firebase from "firebase/app";
 import "firebase/firestore";
+import FluidText from "react-fluid-text";
 const schedule = require("node-schedule");
 const qs = require("query-string");
 const moment = require("moment");
@@ -24,48 +25,6 @@ const logos = {
     "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo.svg?alt=media&token=653c9caa-7f42-459b-8729-28792f292301",
   dark:
     "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo-darkmode.svg?alt=media&token=e20f54b4-71ef-4150-8cf2-b386e5a3c669"
-};
-
-const styles = {
-  light: {
-    div: {
-      position: "relative",
-      height: "100vh",
-      margin: 0,
-      background: "#fff"
-    },
-    h1: {
-      fontSize: "10vh",
-      fontFamily: '"Avenir", sans-serif',
-      fontWeight: 500,
-      lineHeight: 1.4,
-      color: "#0088ce",
-      padding: "0 2rem"
-    }
-  },
-  dark: {
-    div: {
-      position: "relative",
-      height: "100vh",
-      margin: 0,
-      background: "#2b2b2b"
-    },
-    h1: {
-      fontSize: "10vh",
-      fontFamily: '"Avenir", sans-serif',
-      fontWeight: 500,
-      lineHeight: 1.4,
-      color: "#fff",
-      padding: "0 2rem"
-    },
-    img: {
-      width: "80%",
-      position: "absolute",
-      left: "10%",
-      bottom: "8vh",
-      fill: "#fff"
-    }
-  }
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -271,28 +230,61 @@ class App extends Component {
     const { activeReservation } = this.state;
 
     return (
-      <div className="App" style={styles[this.state.theme].div}>
+      <div
+        className="App"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          width: "100%",
+          height: "100vh",
+          justifyContent: "space-between",
+          alignItems: "stretch",
+          background: this.state.theme === "dark" ? "#2b2b2b" : "#fff"
+        }}
+      >
         <div
           style={{
-            position: "absolute",
-            top: "8vh",
+            padding: "2rem",
+            display: "flex",
+            flexDirection: "column",
             textAlign: "center",
-            width: "90%",
-            left: "5%"
+            margin: "auto",
+            flex: 3,
+            overflow: "hidden",
+            justifyContent: "center"
           }}
         >
-          <h1 style={styles[this.state.theme].h1}>
-            {activeReservation
-              ? `Welcome ${
+          <h1
+            style={{
+              wordBreak: "break-word",
+              fontSize: "10vh",
+              fontWeight: 500,
+              lineHeight: 1.4,
+              color: this.state.theme === "dark" ? "#fff" : "#0088ce"
+            }}
+          >
+            {activeReservation ? (
+              <>
+                Welcome
+                <br />
+                {
                   this.state.reservations
                     .find(doc => doc.id === activeReservation)
                     .data().for
-                }`
-              : this.state.error || "Reserved Visitor Parking"}
+                }
+              </>
+            ) : (
+              this.state.error || "Reserved Visitor Parking"
+            )}
           </h1>
         </div>
         <img
-          style={styles.dark.img}
+          style={{
+            flex: 1,
+            paddingBottom: "8vh",
+            margin: "auto"
+          }}
           src={logos[this.state.theme]}
           alt="UAH Logo"
         ></img>

@@ -10,6 +10,7 @@
     "react": "^16.10.2",
     "react-app-polyfill": "^1.0.4",
     "react-dom": "^16.10.2",
+    "react-fluid-text": "^0.1.0",
     "react-router-dom": "^5.1.2",
     "react-scripts": "3.2.0"
   },
