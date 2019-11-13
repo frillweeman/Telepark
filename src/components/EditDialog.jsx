@@ -328,6 +328,7 @@ class EditDialog extends Component {
                   </div>
                 </div>
                 <DateRangePicker
+                  readOnly
                   displayFormat="ddd M/DD"
                   numberOfMonths={1}
                   startDate={this.state.startDate}

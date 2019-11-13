@@ -44,7 +44,7 @@ function TableHead(props) {
         SPACE
       </Grid>
       <Grid item xs={4}>
-        RESERVED FOR
+        <Hidden xsDown>RESERVED&nbsp;</Hidden>FOR
       </Grid>
       <Grid item xs={3}>
         FROM
