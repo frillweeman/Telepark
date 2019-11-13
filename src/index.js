@@ -1,7 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
+// order matters here
+import "react-dates/lib/css/_datepicker.css";
 import "./styles.css";
+
 import Table from "./components/Table";
 import Users from "./components/Users";
 import {

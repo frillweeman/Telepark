@@ -45,6 +45,7 @@ class RestartDialog extends Component {
             <SpaceSelector
               onChange={this.handleNewSpaces}
               spacesSelected={[]}
+              disabled={[]}
             />
           </FormControl>
         </DialogContent>

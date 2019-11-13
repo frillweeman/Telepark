@@ -8,6 +8,16 @@ class SpaceSelector extends Component {
     spacesSelected: this.props.spacesSelected
   };
 
+  componentDidUpdate(prevProps, prevState) {
+    if (prevProps.disabled !== this.props.disabled) {
+      this.setState({
+        spacesSelected: this.state.spacesSelected.filter(
+          id => !this.props.disabled.includes(id)
+        )
+      });
+    }
+  }
+
   handleCheckboxChange = space => (e, checked) => {
     let spacesSelected = this.state.spacesSelected;
     if (checked) {
@@ -29,7 +39,7 @@ class SpaceSelector extends Component {
           "6L",
           "7L",
           "8L"
-        ];
+        ].filter(id => !this.props.disabled.includes(id));
       else spacesSelected.push(space);
     } else {
       if (space == "all") spacesSelected = [];
@@ -39,6 +49,13 @@ class SpaceSelector extends Component {
     this.setState(
       { spacesSelected: spacesSelected },
       this.props.onChange.bind(this, spacesSelected)
+    );
+  };
+
+  isAllSelected = () => {
+    return (
+      this.state.spacesSelected.length ===
+      spacesPerSide * 2 - this.props.disabled.length
     );
   };
 
@@ -64,6 +81,9 @@ class SpaceSelector extends Component {
               labelPlacement="end"
               control={
                 <Checkbox
+                  disabled={this.props.disabled.includes(
+                    `${spacesPerSide - index}L`
+                  )}
                   checked={this.state.spacesSelected.includes(
                     `${spacesPerSide - index}L`
                   )}
@@ -77,16 +97,10 @@ class SpaceSelector extends Component {
             {!index && (
               <Tooltip
                 placement="bottom"
-                title={
-                  this.state.spacesSelected.length == spacesPerSide * 2
-                    ? "Deselect All"
-                    : "Select All"
-                }
+                title={this.isAllSelected() ? "Deselect All" : "Select All"}
               >
                 <Checkbox
-                  checked={
-                    this.state.spacesSelected.length == spacesPerSide * 2
-                  }
+                  checked={this.isAllSelected()}
                   onChange={this.handleCheckboxChange("all")}
                   color="secondary"
                 />
@@ -97,6 +111,9 @@ class SpaceSelector extends Component {
               labelPlacement="start"
               control={
                 <Checkbox
+                  disabled={this.props.disabled.includes(
+                    `${spacesPerSide - index}R`
+                  )}
                   checked={this.state.spacesSelected.includes(
                     `${spacesPerSide - index}R`
                   )}

@@ -4,7 +4,7 @@ import TableHead from "./TableHead";
 import DeleteDialog from "./DeleteDialog";
 import EditDialog from "./EditDialog";
 import Widget from "./Widget";
-import { Grid, List, Typography, Button } from "@material-ui/core";
+import { Grid, List, Button } from "@material-ui/core";
 const moment = require("moment");
 
 function getCurrentWeekday(beginning) {
@@ -34,25 +34,33 @@ class Table extends Component {
     selected: []
   };
 
-  getConflictingReservation = (startTime, endTime, player_ids) => {
-    let res4PID = this.props.reservations.filter(res =>
-      res.data().player_id.some(p => player_ids.indexOf(p) >= 0)
-    );
+  getConflictingReservation = (startTime, endTime) => {
+    const { reservations } = this.props;
+    if (!reservations.length) return null;
 
-    if (!res4PID.length) return null;
+    let unavailableIDs = [];
 
-    return res4PID.find(el => {
-      let { from, to } = el.data();
+    for (let res in reservations) {
+      const { from, to, player_id } = reservations[res].data();
 
+      // make moment dates from Firebase Timestamp
       from = moment(from.toDate());
       to = moment(to.toDate());
 
-      return (
+      if (
         startTime.isBetween(from, to, "minute", "()") ||
         endTime.isBetween(from, to, "minute", "()") ||
         from.isBetween(startTime, endTime, "minute", "()")
-      );
-    });
+      ) {
+        for (let id in player_id) {
+          if (!unavailableIDs.includes(player_id[id])) {
+            unavailableIDs.push(player_id[id]);
+          }
+        }
+      }
+    }
+
+    return unavailableIDs;
   };
 
   // ToDo: if reservation deleted, remove its document id from selected[]

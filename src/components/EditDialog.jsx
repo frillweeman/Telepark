@@ -16,7 +16,6 @@ import {
 } from "@material-ui/core";
 import ResponsiveDialog from "./ResponsiveDialog";
 import { DateRangePicker } from "react-dates";
-import "react-dates/lib/css/_datepicker.css";
 import SpaceSelector from "./SpaceSelector";
 const moment = require("moment");
 
@@ -41,12 +40,10 @@ class EditDialog extends Component {
   state = {
     id: this.props.id,
     for: this.props.reservation.for,
+    disabled: [],
     spacesSelected: this.props.reservation.player_id,
     startDate: moment(this.props.reservation.from.toDate()),
     endDate: moment(this.props.reservation.to.toDate()),
-    startTime: moment(this.props.reservation.from.toDate()),
-    endTime: moment(this.props.reservation.to.toDate()),
-    specialDateSelection: null,
     error: {
       for: false,
       space: false,
@@ -54,6 +51,18 @@ class EditDialog extends Component {
     },
     focusedInput: null
   };
+
+  componentDidMount() {
+    this.disableConflicts();
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    if (
+      !prevState.startDate.isSame(this.state.startDate, "minute") ||
+      !prevState.endDate.isSame(this.state.endDate, "minute")
+    )
+      this.disableConflicts();
+  }
 
   closeDialog = () => {
     this.props.onClose();
@@ -76,13 +85,17 @@ class EditDialog extends Component {
   };
 
   setTomorrow = () => {
-    const tomorrow = moment().add(1, "days");
+    const tomorrow = {
+      start: moment().add(1, "days"),
+      end: moment().add(1, "days")
+    };
+
+    tomorrow.start.set({ hour: 8, minute: 0, second: 0 });
+    tomorrow.end.set({ hour: 17, minute: 0, second: 0 });
+
     this.setState({
-      startDate: tomorrow,
-      endDate: tomorrow,
-      startTime: this.state.startTime.set({ hour: 8, minute: 0, second: 0 }),
-      endTime: this.state.endTime.set({ hour: 17, minute: 0, second: 0 }),
-      specialDateSelection: "tomorrow"
+      startDate: tomorrow.start,
+      endDate: tomorrow.end
     });
   };
 
@@ -101,22 +114,30 @@ class EditDialog extends Component {
   };
 
   setWeek = () => {
-    const today = moment();
+    const week = {
+      start: moment(),
+      end: this.getNextFriday()
+    };
+
+    week.end.set({ hour: 17, minute: 0, second: 0 });
+
     this.setState({
-      startDate: today,
-      endDate: this.getNextFriday(),
-      specialDateSelection: "week",
-      startTime: this.state.startTime.set({ hour: 8, minute: 0, second: 0 }),
-      endTime: this.state.endTime.set({ hour: 17, minute: 0, second: 0 })
+      startDate: week.start,
+      endDate: week.end
     });
   };
 
   setToday = () => {
-    const today = moment();
+    const today = {
+      start: moment(),
+      end: moment()
+    };
+
+    today.end.set({ hour: 17, minute: 0, second: 0 });
+
     this.setState({
-      startDate: today,
-      endDate: today,
-      specialDateSelection: "today"
+      startDate: today.start,
+      endDate: today.end
     });
   };
 
@@ -125,15 +146,38 @@ class EditDialog extends Component {
   };
 
   handleSelect = range => {
-    // do not process until we have both start and end
-    if (!(range.startDate && range.endDate)) return;
-    this.setState(range);
+    if (range.startDate) {
+      const now = moment();
+
+      range.startDate.set({
+        hour: range.startDate.isSame(now, "date")
+          ? this.state.startDate.hour()
+          : 8,
+        minute: range.startDate.isSame(now, "date")
+          ? this.state.startDate.minute()
+          : 0,
+        second: 0
+      });
+    }
+
+    if (range.endDate)
+      range.endDate.set({
+        hour: this.state.endDate.hour(),
+        minute: this.state.endDate.minute(),
+        second: 0
+      });
+
+    this.setState({
+      startDate: range.startDate || this.state.startDate,
+      endDate: range.endDate || this.state.endDate
+    });
   };
 
   handleTimeChange = key => e => {
     const splitTime = e.target.value.split(":");
 
-    let newDate = this.state[key];
+    let newDate = moment(this.state[key]);
+
     newDate.set({
       hour: parseInt(splitTime[0]),
       minute: parseInt(splitTime[1]),
@@ -145,7 +189,7 @@ class EditDialog extends Component {
     });
   };
 
-  handleSubmit = () => {
+  validateData = () => {
     let validData = true;
 
     let errors = {
@@ -165,56 +209,38 @@ class EditDialog extends Component {
       errors.for = true;
     }
 
-    if (this.state.endTime <= this.state.startTime) {
-      alert("invalid end time");
+    if (this.state.endDate <= this.state.startDate) {
       errors.endTime = true;
       validData = false;
     }
 
-    this.setState({ error: errors });
+    return { errors, validData };
+  };
 
-    if (!validData) return;
-    // end check
-
-    const fullStartDate = this.state.startDate.set({
-      hour: this.state.startTime.hour(),
-      minute: this.state.startTime.minute(),
-      second: 0
-    });
-
-    const fullEndDate = this.state.endDate.set({
-      hour: this.state.endTime.hour(),
-      minute: this.state.endTime.minute(),
-      second: 0
-    });
-
-    const conflictingRes = this.props.getConflictingReservation(
-      fullStartDate,
-      fullEndDate,
-      this.state.spacesSelected
+  disableConflicts = () => {
+    const unavailableIDs = this.props.getConflictingReservation(
+      this.state.startDate,
+      this.state.endDate
     );
 
-    if (conflictingRes) {
-      const res = conflictingRes.data();
-      alert(
-        `Conflict with Existing Reservation\n\nFor: ${
-          res.for
-        }\nWhen: ${res.from
-          .toDate()
-          .toLocaleString()} - ${res.to
-          .toDate()
-          .toLocaleString()}\nSpaces: ${res.player_id.map(
-          id => `${id} `
-        )}\n\nPlease choose other spaces or times.`
-      );
-      return;
-    }
+    this.setState({ disabled: unavailableIDs });
+  };
+
+  handleSubmit = () => {
+    const res = this.validateData();
+
+    this.setState({ error: res.errors });
+
+    if (!res.validData) return;
+    // end check
+
+    // const { fullStartDate, fullEndDate } = this.handleConflicts();
 
     const newReservation = {
       for: this.state.for,
       player_id: this.state.spacesSelected,
-      from: fullStartDate.toDate(),
-      to: fullEndDate.toDate()
+      from: this.state.startDate.toDate(),
+      to: this.state.endDate.toDate()
     };
 
     if (this.state.id === "new") this.props.onCreateDocument(newReservation);
@@ -308,6 +334,7 @@ class EditDialog extends Component {
                   startDateId="start"
                   endDate={this.state.endDate}
                   endDateId="end"
+                  minimumNights={0}
                   onDatesChange={this.handleSelect}
                   focusedInput={this.state.focusedInput}
                   onFocusChange={focusedInput =>
@@ -328,8 +355,8 @@ class EditDialog extends Component {
                       marginRight: 2
                     }}
                     variant="outlined"
-                    value={this.state.startTime.format("HH:mm")}
-                    onChange={this.handleTimeChange("startTime")}
+                    value={this.state.startDate.format("HH:mm")}
+                    onChange={this.handleTimeChange("startDate")}
                   />
                   <br />
                   <TextField
@@ -342,8 +369,8 @@ class EditDialog extends Component {
                       textAlign: "center"
                     }}
                     variant="outlined"
-                    value={this.state.endTime.format("HH:mm")}
-                    onChange={this.handleTimeChange("endTime")}
+                    value={this.state.endDate.format("HH:mm")}
+                    onChange={this.handleTimeChange("endDate")}
                   />
                 </div>
               </FormControl>
@@ -364,6 +391,7 @@ class EditDialog extends Component {
                   Select one or more parking spaces below.
                 </FormHelperText>
                 <SpaceSelector
+                  disabled={this.state.disabled}
                   onChange={this.handleNewSpaces}
                   spacesSelected={this.props.reservation.player_id}
                 />
