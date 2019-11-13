@@ -279,7 +279,7 @@ class EditDialog extends Component {
                   label="For"
                   value={this.state.for}
                   onChange={this.handleFieldChange("for")}
-                  autoFocus
+                  autoFocus={this.state.id === "new"}
                 />
               </FormControl>
             </Grid>
@@ -401,6 +401,15 @@ class EditDialog extends Component {
         </DialogContent>
         <DialogActions>
           <Button onClick={this.closeDialog}>Cancel</Button>
+          {this.state.id !== "new" && (
+            <Button
+              color="secondary"
+              variant="outlined"
+              onClick={this.props.onDelete(this.state.id)}
+            >
+              Delete
+            </Button>
+          )}
           <Button
             color="primary"
             variant="outlined"

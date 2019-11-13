@@ -2,13 +2,19 @@ import React from "react";
 import { withStyles } from "@material-ui/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useTheme } from "@material-ui/styles";
-import { AppBar as AB, Button, Menu, MenuItem, Grid } from "@material-ui/core";
+import {
+  AppBar as AB,
+  Button,
+  Menu,
+  MenuItem,
+  Hidden
+} from "@material-ui/core";
 
 const styles = theme => ({
   account: {
     position: "absolute",
     top: theme.spacing(2),
-    right: theme.spacing(2),
+    right: 10,
     color: "white"
   },
   icon: {
@@ -44,7 +50,9 @@ function AppBar(props) {
       {props.user && (
         <>
           <Button className={classes.account} onClick={handleClick}>
-            Hello, {props.user.displayName.split(" ")[0]}
+            <Hidden xsDown>
+              Hello, {props.user.displayName.split(" ")[0]}
+            </Hidden>
             <i className={`${classes.icon} material-icons`}>account_circle</i>
           </Button>
           <Menu
@@ -62,6 +70,9 @@ function AppBar(props) {
             onClose={handleClose}
           >
             <MenuItem onClick={props.onSignOut}>Sign Out</MenuItem>
+            <Hidden smUp>
+              <MenuItem>{props.user.displayName}</MenuItem>
+            </Hidden>
           </Menu>
         </>
       )}

@@ -120,10 +120,15 @@ class Table extends Component {
     this.setState({ selectedForEdit: "new" });
   };
 
-  handleCancelEdit = e => {
-    this.setState({
-      selectedForEdit: null
-    });
+  handleCancelEdit = (id = null) => e => {
+    this.setState(
+      {
+        selectedForEdit: null
+      },
+      () => {
+        if (id) this.props.onDeleteDocument(id);
+      }
+    );
   };
 
   render() {
@@ -194,7 +199,8 @@ class Table extends Component {
         {this.state.selectedForEdit && (
           <EditDialog
             open
-            onClose={this.handleCancelEdit}
+            onClose={this.handleCancelEdit(null)}
+            onDelete={this.handleCancelEdit}
             onUpdateDocument={this.props.onUpdateDocument}
             onCreateDocument={this.props.onCreateDocument}
             getConflictingReservation={this.getConflictingReservation}
