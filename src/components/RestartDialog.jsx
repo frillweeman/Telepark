@@ -1,15 +1,14 @@
 import React, { Component } from "react";
 import {
-  Dialog,
   DialogTitle,
   DialogContent,
   FormControl,
   FormLabel,
   FormHelperText,
   DialogActions,
-  Button,
-  Container
+  Button
 } from "@material-ui/core";
+import ResponsiveDialog from "./ResponsiveDialog";
 import SpaceSelector from "./SpaceSelector";
 
 class RestartDialog extends Component {
@@ -30,7 +29,7 @@ class RestartDialog extends Component {
 
   render() {
     return (
-      <Dialog
+      <ResponsiveDialog
         open
         onClose={this.props.onClose.bind(null, false)}
         onKeyPress={this.handleKeyPress}
@@ -59,7 +58,7 @@ class RestartDialog extends Component {
             Restart
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
     );
   }
 }
