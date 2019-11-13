@@ -2,3 +2,27 @@
   font-family: "Roboto", sans-serif;
   color: "#2b2b2b";
 }
+
+.DateRangePicker * {
+  box-sizing: border-box;
+}
+
+div.DateRangePickerInput {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+div.DateRangePickerInput_arrow {
+  flex: 1;
+  text-align: center;
+}
+
+div.DateInput {
+  flex: 2;
+}
+
+input.DateInput_input {
+  text-align: center;
+}

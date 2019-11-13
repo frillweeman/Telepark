@@ -1,15 +1,8 @@
-/*
- * TO DO
- *
- * - decide whether to ask user for space or autochoose
- * - change space (player_id) to array, represent change
- */
-
 /*eslint no-extend-native: ["error", { "exceptions": ["Date"] }]*/
 
+import "react-dates/initialize";
 import React, { Component } from "react";
 import {
-  Dialog,
   DialogContent,
   FormControl,
   DialogTitle,
@@ -21,7 +14,9 @@ import {
   FormHelperText,
   Chip
 } from "@material-ui/core";
-import { DateRange } from "react-date-range";
+import ResponsiveDialog from "./ResponsiveDialog";
+import { DateRangePicker } from "react-dates";
+import "react-dates/lib/css/_datepicker.css";
 import SpaceSelector from "./SpaceSelector";
 const moment = require("moment");
 
@@ -42,59 +37,6 @@ const classes = {
   }
 };
 
-const calendarStyle = {
-  DateRange: {
-    background: "#ffffff"
-  },
-  Calendar: {
-    background: "transparent",
-    color: "#95a5a6",
-    boxShadow: "0 0 1px #eee",
-    // width: "100%",
-    padding: "0px"
-  },
-  MonthAndYear: {
-    background: "#55B1E3",
-    color: "#fff",
-    padding: "20px 10px",
-    height: "auto"
-  },
-  MonthButton: {
-    background: "#fff"
-  },
-  MonthArrowPrev: {
-    borderRightColor: "#55B1E3"
-  },
-  MonthArrowNext: {
-    borderLeftColor: "#55B1E3"
-  },
-  Weekday: {
-    background: "#3AA6DF",
-    color: "#fff",
-    padding: "10px",
-    height: "auto",
-    fontWeight: "normal"
-  },
-  Day: {
-    transition: "transform .1s ease, box-shadow .1s ease, background .1s ease"
-  },
-  DaySelected: {
-    background: "#55B1E3"
-  },
-  DayActive: {
-    background: "#55B1E3",
-    boxShadow: "none"
-  },
-  DayInRange: {
-    background: "#eee",
-    color: "#55B1E3"
-  },
-  DayHover: {
-    background: "#4f4f4f",
-    color: "#fff"
-  }
-};
-
 class EditDialog extends Component {
   state = {
     id: this.props.id,
@@ -109,7 +51,8 @@ class EditDialog extends Component {
       for: false,
       space: false,
       endTime: false
-    }
+    },
+    focusedInput: null
   };
 
   closeDialog = () => {
@@ -177,19 +120,14 @@ class EditDialog extends Component {
     });
   };
 
-  componentDidMount() {
-    if (this.isToday()) this.setState({ specialDateSelection: "today" });
-    else if (this.isWeek()) this.setState({ specialDateSelection: "week" });
-    else if (this.isTomorrow())
-      this.setState({ specialDateSelection: "tomorrow" });
-  }
-
   handleFieldChange = key => e => {
     this.setState({ [key]: e.target.value });
   };
 
   handleSelect = range => {
-    this.setState(range, this.componentDidMount);
+    // do not process until we have both start and end
+    if (!(range.startDate && range.endDate)) return;
+    this.setState(range);
   };
 
   handleTimeChange = key => e => {
@@ -295,7 +233,7 @@ class EditDialog extends Component {
 
   render() {
     return (
-      <Dialog
+      <ResponsiveDialog
         open={this.props.open}
         onClose={this.closeDialog}
         fullWidth={true}
@@ -319,77 +257,103 @@ class EditDialog extends Component {
                 />
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl
-                style={{
-                  ...classes.formControl
-                }}
-              >
-                <FormLabel>Date</FormLabel>
-                <FormHelperText style={{ marginBottom: "1em" }}>
-                  Select a date or date range on the calendar.
-                </FormHelperText>
-                <div style={{ marginBottom: "0.75em" }}>
-                  <Chip
-                    label="today"
-                    color="primary"
-                    clickable
-                    onClick={this.setToday}
-                    variant={
-                      this.state.specialDateSelection !== "today" && "outlined"
-                    }
-                    style={{ marginRight: "0.75em" }}
+            <Grid item xs={12} sm={6} style={{ paddingRight: 10 }}>
+              <FormControl style={{ width: "100%" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap"
+                  }}
+                >
+                  <FormLabel style={{ marginBottom: 10 }}>Date</FormLabel>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      marginBottom: 10
+                    }}
+                  >
+                    <Chip
+                      label="Today"
+                      color="primary"
+                      clickable
+                      onClick={this.setToday}
+                      variant={this.isToday() ? "default" : "outlined"}
+                      style={{ margin: 3 }}
+                    />
+                    <Chip
+                      label="Tomorrow"
+                      color="primary"
+                      clickable
+                      onClick={this.setTomorrow}
+                      variant={this.isTomorrow() ? "default" : "outlined"}
+                      style={{ margin: 3 }}
+                    />
+                    <Chip
+                      label="Week"
+                      color="primary"
+                      clickable
+                      onClick={this.setWeek}
+                      variant={this.isWeek() ? "default" : "outlined"}
+                      style={{ margin: 3 }}
+                    />
+                  </div>
+                </div>
+                <DateRangePicker
+                  displayFormat="ddd M/DD"
+                  numberOfMonths={1}
+                  startDate={this.state.startDate}
+                  startDateId="start"
+                  endDate={this.state.endDate}
+                  endDateId="end"
+                  onDatesChange={this.handleSelect}
+                  focusedInput={this.state.focusedInput}
+                  onFocusChange={focusedInput =>
+                    this.setState({ focusedInput })
+                  }
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    marginBottom: 20
+                  }}
+                >
+                  <TextField
+                    label="from"
+                    type="time"
+                    style={{
+                      flex: 1,
+                      marginRight: 2
+                    }}
+                    variant="outlined"
+                    value={this.state.startTime.format("HH:mm")}
+                    onChange={this.handleTimeChange("startTime")}
                   />
-                  <Chip
-                    label="tomorrow"
-                    color="primary"
-                    clickable
-                    onClick={this.setTomorrow}
-                    variant={
-                      this.state.specialDateSelection !== "tomorrow" &&
-                      "outlined"
-                    }
-                    style={{ marginRight: "0.75em" }}
-                  />
-                  <Chip
-                    label="this week"
-                    color="primary"
-                    clickable
-                    onClick={this.setWeek}
-                    variant={
-                      this.state.specialDateSelection !== "week" && "outlined"
-                    }
+                  <br />
+                  <TextField
+                    error={this.state.error.endTime}
+                    label="to"
+                    type="time"
+                    style={{
+                      flex: 1,
+                      marginLeft: 2,
+                      textAlign: "center"
+                    }}
+                    variant="outlined"
+                    value={this.state.endTime.format("HH:mm")}
+                    onChange={this.handleTimeChange("endTime")}
                   />
                 </div>
-                <DateRange
-                  calendars={1}
-                  theme={calendarStyle}
-                  onChange={this.handleSelect}
-                  disableDaysBeforeToday
-                  startDate={this.state.startDate}
-                  endDate={this.state.endDate}
-                />
-                <FormLabel style={{ margin: "1em 0" }}>Time</FormLabel>
-                <TextField
-                  label="Start Time"
-                  type="time"
-                  style={{ paddingRight: "1em" }}
-                  value={this.state.startTime.format("HH:mm")}
-                  onChange={this.handleTimeChange("startTime")}
-                />
-                <br />
-                <TextField
-                  error={this.state.error.endTime}
-                  label="End Time"
-                  type="time"
-                  style={{ paddingRight: "1em", marginBottom: "1em" }}
-                  value={this.state.endTime.format("HH:mm")}
-                  onChange={this.handleTimeChange("endTime")}
-                />
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl style={{ width: "95%", marginLeft: "1.2em" }}>
+              <FormControl
+                style={{
+                  width: "100%"
+                }}
+              >
                 <FormLabel error={this.state.error.space}>
                   Parking Space Selection
                 </FormLabel>
@@ -417,7 +381,7 @@ class EditDialog extends Component {
             {this.state.id !== "new" ? "Update" : "Create"}
           </Button>
         </DialogActions>
-      </Dialog>
+      </ResponsiveDialog>
     );
   }
 }

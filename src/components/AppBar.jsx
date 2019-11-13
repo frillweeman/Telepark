@@ -1,11 +1,10 @@
 import React from "react";
 import { withStyles } from "@material-ui/styles";
-import { AppBar as AB, Button, Menu, MenuItem } from "@material-ui/core";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { useTheme } from "@material-ui/styles";
+import { AppBar as AB, Button, Menu, MenuItem, Grid } from "@material-ui/core";
 
 const styles = theme => ({
-  logo: {
-    position: "relative"
-  },
   account: {
     position: "absolute",
     top: theme.spacing(2),
@@ -18,6 +17,8 @@ const styles = theme => ({
 });
 
 function AppBar(props) {
+  const theme = useTheme();
+  const small = useMediaQuery(theme.breakpoints.down("xs"));
   const { classes } = props;
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -30,14 +31,16 @@ function AppBar(props) {
   };
 
   return (
-    <AB position="fixed" className={classes.root}>
+    <AB position="fixed">
       <img
-        className={classes.logo}
         src="/telepark.svg"
         alt="telepark logo"
-        style={{ height: 50, padding: 10 }}
-      />{" "}
-      {props.test}
+        style={{
+          width: 220,
+          padding: 10,
+          margin: small ? theme.spacing(0, 2) : "auto"
+        }}
+      />
       {props.user && (
         <>
           <Button className={classes.account} onClick={handleClick}>

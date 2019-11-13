@@ -9,6 +9,14 @@ const moment = require("moment");
 
 function getCurrentWeekday(beginning) {
   const d = new Date();
+
+  // if after hours, use next day
+  if (d.getHours() >= 17) {
+    d.setDate(d.getDate() + 1);
+    d.setHours(8, 0, 0);
+  }
+
+  // if not on weekday, choose next monday
   if (!d.getDay() || d.getDay() > 5) {
     d.setDate(d.getDate() + ((1 + 7 - d.getDay()) % 7));
     d.setHours(beginning ? 8 : 17, 0, 0);
