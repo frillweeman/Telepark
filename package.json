@@ -10,6 +10,7 @@
     "@material-ui/icons": "^4.5.1",
     "firebase": "^7.0.0",
     "moment": "^2.24.0",
+    "prop-types": "^15.7.2",
     "react": "^16.11.0",
     "react-dates": "^21.3.2",
     "react-dom": "^16.11.0",

@@ -36,12 +36,12 @@ class Table extends Component {
 
   getConflictingReservation = (startTime, endTime) => {
     const { reservations } = this.props;
-    if (!reservations.length) return null;
+    if (!reservations.length) return [];
 
     let unavailableIDs = [];
 
     for (let res in reservations) {
-      const { from, to, player_id } = reservations[res].data();
+      let { from, to, player_id } = reservations[res].data();
 
       // make moment dates from Firebase Timestamp
       from = moment(from.toDate());
@@ -137,11 +137,11 @@ class Table extends Component {
         <List>
           <Grid container>
             <TableHead
-              selected={
+              selected={Boolean(
                 this.state.selected.length &&
-                this.state.selected.length === this.props.reservations.length
-              }
-              someSelected={this.state.selected.length}
+                  this.state.selected.length === this.props.reservations.length
+              )}
+              someSelected={Boolean(this.state.selected.length)}
               onCheckboxChange={this.handleSelectAll}
               onDelete={this.handleDeleteMany}
             />

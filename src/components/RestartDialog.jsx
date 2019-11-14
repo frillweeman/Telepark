@@ -41,11 +41,7 @@ class RestartDialog extends Component {
             <FormHelperText style={{ marginBottom: "1em" }}>
               Select one or more parking spaces below.
             </FormHelperText>
-            <SpaceSelector
-              onChange={this.handleNewSpaces}
-              spacesSelected={[]}
-              disabled={[]}
-            />
+            <SpaceSelector onChange={this.handleNewSpaces} />
           </FormControl>
         </DialogContent>
         <DialogActions>

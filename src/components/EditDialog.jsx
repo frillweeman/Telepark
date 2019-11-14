@@ -2,6 +2,7 @@
 
 import "react-dates/initialize";
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import {
   DialogContent,
   FormControl,
@@ -40,10 +41,10 @@ class EditDialog extends Component {
   state = {
     id: this.props.id,
     for: this.props.reservation.for,
-    disabled: [],
     spacesSelected: this.props.reservation.player_id,
     startDate: moment(this.props.reservation.from.toDate()),
     endDate: moment(this.props.reservation.to.toDate()),
+    disabled: [],
     error: {
       for: false,
       space: false,
@@ -226,16 +227,35 @@ class EditDialog extends Component {
     this.setState({ disabled: unavailableIDs });
   };
 
+  containsProfanity = () => {
+    const uri = `https://www.purgomalum.com/service/containsprofanity?text=${encodeURIComponent(
+      this.state.for
+    )}`;
+    fetch(uri)
+      .then(data => {
+        data.text().then(containsProfanity => {
+          if (containsProfanity === "true") {
+            this.setState({
+              error: {
+                ...this.state.error,
+                for: true
+              }
+            });
+          } else this.success();
+        });
+      })
+      .catch(e => console.error(e));
+  };
+
   handleSubmit = () => {
     const res = this.validateData();
-
     this.setState({ error: res.errors });
-
     if (!res.validData) return;
-    // end check
 
-    // const { fullStartDate, fullEndDate } = this.handleConflicts();
+    this.containsProfanity();
+  };
 
+  success() {
     const newReservation = {
       for: this.state.for,
       player_id: this.state.spacesSelected,
@@ -247,7 +267,7 @@ class EditDialog extends Component {
     else this.props.onUpdateDocument(this.state.id, newReservation);
 
     this.closeDialog();
-  };
+  }
 
   handleNewSpaces = spaces => {
     this.setState({ spacesSelected: spaces });
@@ -423,5 +443,17 @@ class EditDialog extends Component {
     );
   }
 }
+
+EditDialog.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  onUpdateDocument: PropTypes.func.isRequired,
+  onCreateDocument: PropTypes.func.isRequired,
+  getConflictingReservation: PropTypes.func.isRequired,
+  reservation: PropTypes.object.isRequired,
+  id: PropTypes.string.isRequired
+};
+
+EditDialog.defaultProps = {};
 
 export default EditDialog;
