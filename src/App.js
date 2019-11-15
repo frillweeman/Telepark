@@ -235,59 +235,73 @@ class App extends Component {
         style={{
           display: "flex",
           flexDirection: "column",
-          flex: 1,
           width: "100%",
           height: "100vh",
           justifyContent: "space-between",
-          alignItems: "stretch",
+          alignItems: "center",
           background: this.state.theme === "dark" ? "#2b2b2b" : "#fff"
         }}
       >
         <div
           style={{
-            padding: "2rem",
+            width: "100%",
             display: "flex",
             flexDirection: "column",
-            textAlign: "center",
-            margin: "auto",
-            flex: 3,
-            overflow: "hidden",
-            justifyContent: "center"
+            justifyContent: "center",
+            flex: 4
           }}
         >
-          <h1
+          <div
             style={{
-              wordBreak: "break-word",
-              fontSize: "10vh",
-              fontWeight: 500,
-              lineHeight: 1.4,
-              color: this.state.theme === "dark" ? "#fff" : "#0088ce"
+              padding: "2rem",
+              textAlign: "center",
+              margin: "auto",
+              overflow: "hidden"
             }}
           >
-            {activeReservation ? (
-              <>
-                Welcome
-                <br />
-                {
-                  this.state.reservations
-                    .find(doc => doc.id === activeReservation)
-                    .data().for
-                }
-              </>
-            ) : (
-              this.state.error || "Reserved Visitor Parking"
-            )}
-          </h1>
+            <h1
+              style={{
+                wordBreak: "break-word",
+                fontSize: "10vh",
+                fontWeight: 500,
+                lineHeight: 1.4,
+                color: this.state.theme === "dark" ? "#fff" : "#0088ce"
+              }}
+            >
+              {activeReservation ? (
+                <>
+                  Welcome
+                  <br />
+                  {
+                    this.state.reservations
+                      .find(doc => doc.id === activeReservation)
+                      .data().for
+                  }
+                </>
+              ) : (
+                this.state.error || "Reserved Visitor Parking"
+              )}
+            </h1>
+          </div>
         </div>
-        <img
+        <div
           style={{
-            flex: 1,
-            paddingBottom: "8vh",
-            margin: "auto"
+            display: "flex",
+            flexDirection: "column",
+            flex: 2,
+            width: "100%"
           }}
-          src={logos[this.state.theme]}
-          alt="UAH Logo"
-        ></img>
+        >
+          <img
+            style={{
+              height: "80%",
+              maxWidth: "80%",
+              margin: "auto"
+            }}
+            src={logos[this.state.theme]}
+            alt="UAH Logo"
+          />
+        </div>
       </div>
     );
   }
