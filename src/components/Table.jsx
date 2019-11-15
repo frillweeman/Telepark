@@ -46,7 +46,7 @@ class Table extends Component {
 
   // ToDo: if reservation deleted, remove its document id from selected[]
   // right now, it just empties the array (not optimal)
-  componentWillUpdate(nextProps, nextState) {
+  UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (nextProps.reservations.length < this.props.reservations.length)
       this.setState({ selected: [] });
   }
