@@ -38,20 +38,34 @@ const classes = {
 };
 
 class EditDialog extends Component {
-  state = {
-    id: this.props.id,
-    for: this.props.reservation.for,
-    spacesSelected: this.props.reservation.player_id,
-    startDate: moment(this.props.reservation.from.toDate()),
-    endDate: moment(this.props.reservation.to.toDate()),
-    disabled: [],
-    error: {
-      for: false,
-      space: false,
-      endTime: false
-    },
-    focusedInput: null
-  };
+  constructor(props) {
+    super(props);
+
+    const res = this.props.reservation.data();
+
+    const momentDates = {
+      start: moment(res.from.toDate()),
+      end: moment(res.to.toDate())
+    };
+
+    this.state = {
+      id: this.props.reservation.id,
+      for: res.for,
+      spacesSelected: res.player_id,
+      startDate: momentDates.start,
+      endDate: momentDates.end,
+      disabled: props.getConflictingReservation(
+        momentDates.start,
+        momentDates.end
+      ),
+      error: {
+        for: false,
+        space: false,
+        endTime: false
+      },
+      focusedInput: null
+    };
+  }
 
   componentDidMount() {
     this.disableConflicts();
@@ -103,7 +117,11 @@ class EditDialog extends Component {
   isWeek = () => {
     const now = moment();
     const eow = this.getNextFriday();
-    return this.state.endDate.isSame(eow, "date") && !now.isSame(eow, "date");
+    return (
+      this.state.endDate.isSame(eow, "date") &&
+      this.state.startDate.isSame(now, "date") &&
+      !now.isSame(eow, "date")
+    );
   };
 
   getNextFriday = () => {
@@ -129,16 +147,23 @@ class EditDialog extends Component {
   };
 
   setToday = () => {
-    const today = {
-      start: moment(),
-      end: moment()
-    };
-
-    today.end.set({ hour: 17, minute: 0, second: 0 });
+    const startDate = moment();
+    const endDate =
+      startDate.hour() >= 17
+        ? moment().set({
+            hour: 23,
+            minute: 59,
+            second: 0
+          })
+        : moment.set({
+            hour: 17,
+            minute: 0,
+            second: 0
+          });
 
     this.setState({
-      startDate: today.start,
-      endDate: today.end
+      startDate,
+      endDate
     });
   };
 
@@ -280,7 +305,7 @@ class EditDialog extends Component {
   render() {
     return (
       <ResponsiveDialog
-        open={this.props.open}
+        open
         onClose={this.closeDialog}
         fullWidth={true}
         maxWidth="sm"
@@ -414,7 +439,7 @@ class EditDialog extends Component {
                 <SpaceSelector
                   disabled={this.state.disabled}
                   onChange={this.handleNewSpaces}
-                  spacesSelected={this.props.reservation.player_id}
+                  spacesSelected={this.state.spacesSelected}
                 />
               </FormControl>
             </Grid>
@@ -444,6 +469,26 @@ class EditDialog extends Component {
   }
 }
 
+function getCurrentWeekday(beginning) {
+  const d = new Date();
+
+  // if after hours, use next day
+  if (d.getHours() >= 17) {
+    d.setDate(d.getDate() + 1);
+    d.setHours(8, 0, 0);
+  }
+
+  // if not on weekday, choose next monday
+  if (!d.getDay() || d.getDay() > 5) {
+    d.setDate(d.getDate() + ((1 + 7 - d.getDay()) % 7));
+    d.setHours(beginning ? 8 : 17, 0, 0);
+  } else if (!beginning) {
+    d.setHours(17, 0, 0);
+  }
+  console.log(d);
+  return d;
+}
+
 EditDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
@@ -454,6 +499,17 @@ EditDialog.propTypes = {
   id: PropTypes.string.isRequired
 };
 
-EditDialog.defaultProps = {};
+EditDialog.defaultProps = {
+  // emulate a Firestore document with default values
+  reservation: {
+    id: "new",
+    data: () => ({
+      for: "",
+      from: getCurrentWeekday(true),
+      to: getCurrentWeekday(false),
+      player_id: []
+    })
+  }
+};
 
 export default EditDialog;

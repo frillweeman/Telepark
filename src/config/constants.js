@@ -9,5 +9,6 @@ export default Telepark = {
     hour: 17,
     minute: 0,
     second: 0
-  }
+  },
+  snackBarAutoHideDuration: 6000 // in milliseconds
 };

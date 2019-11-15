@@ -15,6 +15,7 @@ import {
   Icon,
   IconButton
 } from "@material-ui/core";
+import PropTypes from "prop-types";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 class SignagePlayers extends Component {
@@ -135,5 +136,18 @@ class SignagePlayers extends Component {
     );
   }
 }
+
+SignagePlayers.propTypes = {
+  darkTheme: PropTypes.bool.isRequired,
+  onThemeChange: PropTypes.func.isRequired,
+  onRestart: PropTypes.func.isRequired,
+  theme: PropTypes.object
+};
+
+SignagePlayers.defaultProps = {
+  theme: {
+    spacing: () => 8
+  }
+};
 
 export default SignagePlayers;

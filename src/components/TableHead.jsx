@@ -8,6 +8,7 @@ import {
 } from "@material-ui/core";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { useTheme } from "@material-ui/styles";
+import PropTypes from "prop-types";
 
 function TableHead(props) {
   const theme = useTheme();
@@ -55,5 +56,12 @@ function TableHead(props) {
     </ListItem>
   );
 }
+
+TableHead.propTypes = {
+  selected: PropTypes.bool.isRequired,
+  someSelected: PropTypes.bool.isRequired,
+  onCheckboxChange: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired
+};
 
 export default TableHead;

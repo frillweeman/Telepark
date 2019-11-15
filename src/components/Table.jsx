@@ -7,26 +7,6 @@ import Widget from "./Widget";
 import { Grid, List, Button } from "@material-ui/core";
 const moment = require("moment");
 
-function getCurrentWeekday(beginning) {
-  const d = new Date();
-
-  // if after hours, use next day
-  if (d.getHours() >= 17) {
-    d.setDate(d.getDate() + 1);
-    d.setHours(8, 0, 0);
-  }
-
-  // if not on weekday, choose next monday
-  if (!d.getDay() || d.getDay() > 5) {
-    d.setDate(d.getDate() + ((1 + 7 - d.getDay()) % 7));
-    d.setHours(beginning ? 8 : 17, 0, 0);
-  } else if (!beginning) {
-    d.setHours(17, 0, 0);
-  }
-  console.log(d);
-  return d;
-}
-
 class Table extends Component {
   state = {
     deletePromptOpen: false,
@@ -50,7 +30,8 @@ class Table extends Component {
       if (
         startTime.isBetween(from, to, "minute", "()") ||
         endTime.isBetween(from, to, "minute", "()") ||
-        from.isBetween(startTime, endTime, "minute", "()")
+        from.isBetween(startTime, endTime, "minute", "()") ||
+        (from.isSame(startTime, "minute") && to.isSame(endTime, "minute"))
       ) {
         for (let id in player_id) {
           if (!unavailableIDs.includes(player_id[id])) {
@@ -198,31 +179,14 @@ class Table extends Component {
         />
         {this.state.selectedForEdit && (
           <EditDialog
-            open
             onClose={this.handleCancelEdit(null)}
             onDelete={this.handleCancelEdit}
             onUpdateDocument={this.props.onUpdateDocument}
             onCreateDocument={this.props.onCreateDocument}
             getConflictingReservation={this.getConflictingReservation}
-            reservation={
-              this.state.selectedForEdit === "new"
-                ? {
-                    for: "",
-                    from: getCurrentWeekday(true),
-                    to: getCurrentWeekday(false),
-                    player_id: []
-                  }
-                : this.props.reservations
-                    .find(res => res.id === this.state.selectedForEdit)
-                    .data()
-            }
-            id={
-              this.state.selectedForEdit === "new"
-                ? "new"
-                : this.props.reservations.find(
-                    res => res.id === this.state.selectedForEdit
-                  ).id
-            }
+            reservation={this.props.reservations.find(
+              res => res.id === this.state.selectedForEdit
+            )}
           />
         )}
       </Widget>

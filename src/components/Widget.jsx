@@ -1,6 +1,7 @@
 import React from "react";
 import { withStyles } from "@material-ui/styles";
 import { Paper, Typography } from "@material-ui/core";
+import PropTypes from "prop-types";
 
 const styles = theme => ({
   root: {
@@ -26,5 +27,10 @@ function Widget(props) {
     </Paper>
   );
 }
+
+Widget.propTypes = {
+  title: PropTypes.string,
+  children: PropTypes.node
+};
 
 export default withStyles(styles)(Widget);
