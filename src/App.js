@@ -1,11 +1,10 @@
 // 8:57 pm - 11:00 pm (2 hours)
 
 import React, { Component } from "react";
-import "./App.css";
 
 import firebase from "firebase/app";
 import "firebase/firestore";
-import FluidText from "react-fluid-text";
+import "firebase/functions";
 const schedule = require("node-schedule");
 const qs = require("query-string");
 const moment = require("moment");
@@ -20,18 +19,12 @@ const firebaseConfig = {
   appId: "1:183825692647:web:6af323bc5f709215baaf42"
 };
 
-const logos = {
-  light:
-    "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo.svg?alt=media&token=653c9caa-7f42-459b-8729-28792f292301",
-  dark:
-    "https://firebasestorage.googleapis.com/v0/b/telepark-3df33.appspot.com/o/uahlogo-darkmode.svg?alt=media&token=e20f54b4-71ef-4150-8cf2-b386e5a3c669"
-};
-
 firebase.initializeApp(firebaseConfig);
 
 var db = firebase.firestore();
 let reservationsCollectionRef = db.collection("reservations");
 let globalConfigRef = db.collection("players").doc("global");
+const initializePlayer = firebase.functions().httpsCallable("initializePlayer");
 
 const inPast = date => date < moment();
 
@@ -192,10 +185,13 @@ class App extends Component {
 
   componentDidMount() {
     try {
+      // get player id from query string
       const player_id = qs
         .parse(this.props.location.search, { ignoreQueryPrefix: true })
         .id.toUpperCase();
-      console.log("player-id: ", player_id);
+
+      // update db with device type and ip address
+      initializePlayer({ player_id });
 
       // config options listener
       globalConfigRef.onSnapshot(doc => {
@@ -237,8 +233,6 @@ class App extends Component {
           flexDirection: "column",
           width: "100%",
           height: "100vh",
-          justifyContent: "space-between",
-          alignItems: "center",
           background: this.state.theme === "dark" ? "#2b2b2b" : "#fff"
         }}
       >
@@ -248,7 +242,7 @@ class App extends Component {
             display: "flex",
             flexDirection: "column",
             justifyContent: "center",
-            flex: 4
+            flex: 3
           }}
         >
           <div
@@ -288,20 +282,23 @@ class App extends Component {
           style={{
             display: "flex",
             flexDirection: "column",
-            flex: 2,
+            justifyContent: "flex-start",
+            flex: 1,
             width: "100%"
           }}
-        >
-          <img
-            style={{
-              height: "80%",
-              maxWidth: "80%",
-              margin: "auto"
-            }}
-            src={logos[this.state.theme]}
-            alt="UAH Logo"
-          />
-        </div>
+        ></div>
+        <img
+          style={{
+            // height: "80%",
+            maxWidth: "80%",
+            margin: "0 auto",
+            position: "fixed",
+            bottom: "7%",
+            left: "10%"
+          }}
+          src={`/${this.state.theme}.svg`}
+          alt="UAH Logo"
+        />
       </div>
     );
   }
