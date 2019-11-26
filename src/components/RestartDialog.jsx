@@ -35,7 +35,7 @@ class RestartDialog extends Component {
         onKeyPress={this.handleKeyPress}
       >
         <DialogTitle>Restart Devices</DialogTitle>
-        <DialogContent>
+        <DialogContent style={{ overflowX: "hidden" }}>
           <FormControl style={{ width: "100%" }}>
             <FormLabel>Parking Space Selection</FormLabel>
             <FormHelperText style={{ marginBottom: "1em" }}>

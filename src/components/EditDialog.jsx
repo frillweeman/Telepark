@@ -307,7 +307,7 @@ class EditDialog extends Component {
       <ResponsiveDialog
         open
         onClose={this.closeDialog}
-        fullWidth={true}
+        fullWidth
         maxWidth="sm"
         onKeyPress={this.handleKeyPress}
       >
