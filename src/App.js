@@ -1,5 +1,3 @@
-// 8:57 pm - 11:00 pm (2 hours)
-
 import React, { Component } from "react";
 
 import firebase from "firebase/app";
@@ -30,7 +28,8 @@ const inPast = date => date < moment();
 
 class App extends Component {
   state = {
-    theme: "light",
+    loaded: false,
+    theme: "dark",
     reservations: [],
     activeReservation: null,
     schedule: {
@@ -39,6 +38,48 @@ class App extends Component {
     },
     error: null
   };
+
+  componentDidMount() {
+    try {
+      // get player id from query string
+      const player_id = qs
+        .parse(this.props.location.search, { ignoreQueryPrefix: true })
+        .id.toUpperCase();
+
+      // update db with device type and ip address
+      initializePlayer({ player_id });
+
+      // config options listener
+      globalConfigRef.onSnapshot(doc => {
+        this.setState({
+          theme: doc.data().darkTheme ? "dark" : "light"
+        });
+        console.log(`dark: ${doc.data().darkTheme}`);
+      });
+
+      // reservations listener
+      reservationsCollectionRef
+        .where("player_id", "array-contains", player_id)
+        .onSnapshot(snapshot => {
+          this.setState(
+            {
+              reservations: snapshot.docs,
+              activeReservation: snapshot.docs.find(
+                doc => doc.id === this.state.activeReservation
+              )
+                ? this.state.activeReservation
+                : null
+            },
+            () =>
+              this.scheduleChanges(snapshot.docChanges()).then(() =>
+                this.setState({ loaded: true })
+              )
+          );
+        });
+    } catch (e) {
+      if (e instanceof TypeError) this.setState({ error: "Invalid Player ID" });
+    }
+  }
 
   removeCollisions = date => {
     // find reservations where end time (.to) is same as start time (date)
@@ -163,7 +204,7 @@ class App extends Component {
     });
   };
 
-  scheduleChanges(docChanges) {
+  async scheduleChanges(docChanges) {
     docChanges.forEach(change => {
       console.log("change.type: ", change.type);
       switch (change.type) {
@@ -181,45 +222,7 @@ class App extends Component {
           break;
       }
     });
-  }
-
-  componentDidMount() {
-    try {
-      // get player id from query string
-      const player_id = qs
-        .parse(this.props.location.search, { ignoreQueryPrefix: true })
-        .id.toUpperCase();
-
-      // update db with device type and ip address
-      initializePlayer({ player_id });
-
-      // config options listener
-      globalConfigRef.onSnapshot(doc => {
-        this.setState({
-          theme: doc.data().darkTheme ? "dark" : "light"
-        });
-        console.log(`dark: ${doc.data().darkTheme}`);
-      });
-
-      // reservations listener
-      reservationsCollectionRef
-        .where("player_id", "array-contains", player_id)
-        .onSnapshot(snapshot => {
-          this.setState(
-            {
-              reservations: snapshot.docs,
-              activeReservation: snapshot.docs.find(
-                doc => doc.id === this.state.activeReservation
-              )
-                ? this.state.activeReservation
-                : null
-            },
-            () => this.scheduleChanges(snapshot.docChanges())
-          );
-        });
-    } catch (e) {
-      if (e instanceof TypeError) this.setState({ error: "Invalid Player ID" });
-    }
+    return Promise.resolve();
   }
 
   render() {
@@ -233,7 +236,7 @@ class App extends Component {
           flexDirection: "column",
           width: "100%",
           height: "100vh",
-          background: this.state.theme === "dark" ? "#2b2b2b" : "#fff"
+          background: this.state.theme === "light" ? "#fff" : "#2b2b2b"
         }}
       >
         <div
@@ -273,7 +276,7 @@ class App extends Component {
                   }
                 </>
               ) : (
-                this.state.error || "Reserved Visitor Parking"
+                this.state.loaded && "Reserved Visitor Parking"
               )}
             </h1>
           </div>
