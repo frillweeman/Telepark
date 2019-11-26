@@ -32,9 +32,9 @@ class SignagePlayers extends Component {
 
   closeRestartDevices = success => {
     this.setState({
-      restartOpen: false
+      restartOpen: false,
+      displayUpdateSnackbar: success
     });
-    this.setState({ displayUpdateSnackbar: success });
   };
 
   displayUpdateSnackbar = display => {
@@ -77,7 +77,7 @@ class SignagePlayers extends Component {
                 color="secondary"
                 variant="outlined"
               >
-                Shutdown or Restart Device
+                Restart Signage Players
               </Button>
               <Button
                 disabled

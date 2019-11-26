@@ -48,7 +48,7 @@ class SpaceSelector extends Component {
     }
 
     this.setState(
-      { spacesSelected: spacesSelected },
+      { spacesSelected },
       this.props.onChange.bind(this, spacesSelected)
     );
   };
@@ -70,6 +70,7 @@ class SpaceSelector extends Component {
       >
         {[...Array(spacesPerSide)].map((f, index) => (
           <div
+            key={index}
             style={{
               flex: 1,
               display: "flex",
