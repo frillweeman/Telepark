@@ -73,6 +73,15 @@ function AppBar(props) {
             <Hidden smUp>
               <MenuItem>{props.user.displayName}</MenuItem>
             </Hidden>
+            <MenuItem
+              onClick={() => {
+                window.location =
+                  "mailto:wgf0002@uah.edu?subject=Telepark%20Feedback";
+                handleClose();
+              }}
+            >
+              Submit Feedback
+            </MenuItem>
           </Menu>
         </>
       )}
