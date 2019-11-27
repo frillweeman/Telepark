@@ -169,7 +169,7 @@ class App extends Component {
 
   cancelEventById = id => {
     // if is ongoing, end now
-    // if (id === this.state.activeReservation) this.setContent(null);
+    if (id === this.state.activeReservation) this.setContent(null);
 
     // cancel start and end events
     const { start, end } = this.state.schedule;
@@ -236,7 +236,7 @@ class App extends Component {
           flexDirection: "column",
           width: "100%",
           height: "100vh",
-          background: this.state.theme === "light" ? "#fff" : "#2b2b2b"
+          background: this.state.theme === "light" ? "#fff" : "#000"
         }}
       >
         <div
