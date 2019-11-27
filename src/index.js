@@ -205,11 +205,18 @@ class App extends React.Component {
             user={firebase.auth().currentUser}
             onSignOut={this.handleSignOut}
           />
-          <Grid container style={{ marginTop: 70, padding: theme.spacing(1) }}>
+          <Grid
+            container
+            style={{
+              margin: "70px auto 0 auto",
+              padding: theme.spacing(1),
+              maxWidth: 875
+            }}
+          >
             {firebase.auth().currentUser ? (
               this.state.validUser ? (
                 <>
-                  <Grid item xs={12} lg={6}>
+                  <Grid item xs={12}>
                     <Table
                       reservations={this.state.reservations}
                       onDeleteDocument={this.handleDeleteDocument}
@@ -220,14 +227,14 @@ class App extends React.Component {
                   </Grid>
                   {this.state.admin && (
                     <>
-                      <Grid item xs={12} sm={6} lg={3}>
+                      <Grid item xs={12} sm={6}>
                         <Users
                           users={this.state.users}
                           onRoleChange={this.handleUpdateUser}
                           onDelete={this.handleDeleteUser}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6} lg={3}>
+                      <Grid item xs={12} sm={6}>
                         <SignagePlayers
                           darkTheme={this.state.darkTheme}
                           onThemeChange={this.handleDarkModeChange}
