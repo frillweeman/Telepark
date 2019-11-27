@@ -56,7 +56,8 @@ class EditDialog extends Component {
       endDate: momentDates.end,
       disabled: props.getConflictingReservation(
         momentDates.start,
-        momentDates.end
+        momentDates.end,
+        this.props.reservation.id
       ),
       error: {
         for: false,
@@ -246,7 +247,8 @@ class EditDialog extends Component {
   disableConflicts = () => {
     const unavailableIDs = this.props.getConflictingReservation(
       this.state.startDate,
-      this.state.endDate
+      this.state.endDate,
+      this.state.id
     );
 
     this.setState({ disabled: unavailableIDs });

@@ -14,8 +14,8 @@ class Table extends Component {
     selected: []
   };
 
-  getConflictingReservation = (startTime, endTime) => {
-    const { reservations } = this.props;
+  getConflictingReservation = (startTime, endTime, id) => {
+    const reservations = this.props.reservations.filter(res => res.id !== id);
     if (!reservations.length) return [];
 
     let unavailableIDs = [];
