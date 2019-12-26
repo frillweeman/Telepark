@@ -1,1 +1,3 @@
-build/
+*/build/
+.firebase/
+*/node_modules/

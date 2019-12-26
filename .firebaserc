@@ -1,5 +1,17 @@
 {
   "projects": {
     "default": "telepark-3df33"
+  },
+  "targets": {
+    "telepark-3df33": {
+      "hosting": {
+        "ui": [
+          "uahparking"
+        ],
+        "signage-player": [
+          "telepark-3df33"
+        ]
+      }
+    }
   }
 }
