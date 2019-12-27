@@ -62,7 +62,8 @@ class EditDialog extends Component {
       error: {
         for: false,
         space: false,
-        endTime: false
+        endTime: false,
+        containsProfanity: false
       },
       focusedInput: null
     };
@@ -265,7 +266,8 @@ class EditDialog extends Component {
             this.setState({
               error: {
                 ...this.state.error,
-                for: true
+                for: true,
+                containsProfanity: true
               }
             });
           } else this.success();
@@ -323,7 +325,11 @@ class EditDialog extends Component {
                 <TextField
                   error={this.state.error.for}
                   id="for"
-                  label="For"
+                  label={`For${
+                    this.state.error.containsProfanity
+                      ? " (contains profanity)"
+                      : ""
+                  }`}
                   value={this.state.for}
                   onChange={this.handleFieldChange("for")}
                   autoFocus={this.state.id === "new"}
