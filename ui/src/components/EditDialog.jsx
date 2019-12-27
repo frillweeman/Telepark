@@ -330,6 +330,7 @@ class EditDialog extends Component {
                       ? " (contains profanity)"
                       : ""
                   }`}
+                  inputProps={{ maxLength: 32 }}
                   value={this.state.for}
                   onChange={this.handleFieldChange("for")}
                   autoFocus={this.state.id === "new"}
