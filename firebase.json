@@ -6,7 +6,7 @@
   "hosting": [
     {
       "target": "ui",
-      "public": "ui/build",
+      "public": "./ui/build",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
         {
@@ -17,7 +17,7 @@
     },
     {
       "target": "signage-player",
-      "public": "signage-player/build",
+      "public": "./signage-player/build",
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "rewrites": [
         {
