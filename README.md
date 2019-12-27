@@ -30,7 +30,7 @@ You will need to install the [Firebase CLI](https://firebase.google.com/docs/cli
 
 This project has been configured, with the configuration saved in `firebase.json` and `.firebaserc`. To build and deploy this project, run the build and deploy script `./build-deploy.sh`. 
 
-Alternatively, you may run `npm build` to build a specific React app (ui or signage-player) along with `firebase deploy --only hosting:<target>`, where target is the target name defined in `.firebaserc`.
+Alternatively, you may run `npm run build` to build a specific React app (ui or signage-player) along with `firebase deploy --only hosting:<target>`, where target is the target name defined in `.firebaserc`.
 
 ### More Info
 
