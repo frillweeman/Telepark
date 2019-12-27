@@ -6,7 +6,7 @@ For more info on each component of the system, read the README in the respective
 
 ## Hardware Setup
 
-See the [Hardware Setup Guide](#).
+See the [Hardware Setup Guide](https://github.com/frillweeman/Telepark/blob/master/docs/Hardware%20Setup%20Guide.pdf).
 
 ## Software Development
 
