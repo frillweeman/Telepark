@@ -54,6 +54,8 @@ if [[ ! -e $DEFAULT_IMAGE_PATH ]]; then
     echo "Extracting image from gzip archive"
     sudo -u $SUDO_USER tar xzf $DEFAULT_ARCHIVE_PATH -C $DEFAULT_IMAGE_DIR
     echo "Successfully extracted image"
+    log "deleting gzip archive file"
+    rm DEFAULT_ARCHIVE_PATH &
 
 fi
 
@@ -129,8 +131,13 @@ printf "\nFlashing image. Please wait...\n\n"
 
 dd if=$DEFAULT_IMAGE_PATH of=$DEV bs=4k status=progress
 
-echo "Done. You may remove the SD card."
+echo "Configuring player ID"
 
-echo "(not actually done. you need to mount the boot partition, change telepark.conf, and then unmount it)"
+# mount boot partition and modify the file
+mkdir /media/boot
+mount ${DEV}1 /media/boot
+sed -i "s/PLAYER_ID=8R/PLAYER_ID=$PLAYER_ID/" /media/boot/telepark.conf
+umount /media/boot
+rm -r /media/boot
 
-#todo: delete tar.gz after extracting image
+printf "\nDone. You may remove the SD card.\n"
