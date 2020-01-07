@@ -55,8 +55,7 @@ if [[ ! -e $DEFAULT_IMAGE_PATH ]]; then
     sudo -u $SUDO_USER tar xzf $DEFAULT_ARCHIVE_PATH -C $DEFAULT_IMAGE_DIR
     echo "Successfully extracted image"
     log "deleting gzip archive file"
-    rm DEFAULT_ARCHIVE_PATH &
-
+    rm $DEFAULT_ARCHIVE_PATH &
 fi
 
 # prompt for space ID
@@ -78,7 +77,7 @@ echo "|-------- SSB --------|"
 echo
 echo -en "Enter a parking space ID: "
 read PLAYER_ID
-printf "You picked: $PLAYER_ID\n\n"
+echo
 
 # look for disk
 REMOVABLE_DEVS=($(
@@ -134,10 +133,12 @@ dd if=$DEFAULT_IMAGE_PATH of=$DEV bs=4k status=progress
 echo "Configuring player ID"
 
 # mount boot partition and modify the file
-mkdir /media/boot
-mount ${DEV}1 /media/boot
-sed -i "s/PLAYER_ID=8R/PLAYER_ID=$PLAYER_ID/" /media/boot/telepark.conf
-umount /media/boot
-rm -r /media/boot
+mountPoint=/media/$SUDO_USER/boot
+mkdir $mountPoint
+
+mount ${DEV}1 $mountPoint
+sed -i "s/PLAYER_ID=8R/PLAYER_ID=$PLAYER_ID/" $mountPoint/telepark.conf
+umount $mountPoint
+rm -r /media/$SUDO_USER/boot
 
 printf "\nDone. You may remove the SD card.\n"
