@@ -123,6 +123,8 @@ case ${#REMOVABLE_DEVS[@]} in
       ;;
 esac
 
+umount /media/$SUDO_USER/*
+
 log "Flashing target: $DEV"
 
 # we have an image at this point
