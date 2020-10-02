@@ -256,24 +256,25 @@ class EditDialog extends Component {
   };
 
   containsProfanity = () => {
-    const uri = `https://www.purgomalum.com/service/containsprofanity?text=${encodeURIComponent(
-      this.state.for
-    )}`;
-    fetch(uri)
-      .then(data => {
-        data.text().then(containsProfanity => {
-          if (containsProfanity === "true") {
-            this.setState({
-              error: {
-                ...this.state.error,
-                for: true,
-                containsProfanity: true
-              }
-            });
-          } else this.success();
-        });
-      })
-      .catch(e => console.error(e));
+    // const uri = `https://www.purgomalum.com/service/containsprofanity?text=${encodeURIComponent(
+    //   this.state.for
+    // )}`;
+    // fetch(uri)
+    //   .then(data => {
+    //     data.text().then(containsProfanity => {
+    //       if (containsProfanity === "true") {
+    //         this.setState({
+    //           error: {
+    //             ...this.state.error,
+    //             for: true,
+    //             containsProfanity: true
+    //           }
+    //         });
+    //       } else this.success();
+    //     });
+    //   })
+    //   .catch(e => console.error(e));
+      this.success();
   };
 
   handleSubmit = () => {
